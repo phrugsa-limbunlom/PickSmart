@@ -26,10 +26,10 @@ img {
     top: 0;
     left: 0;
     right: 0;
-    background-color: #1F2544;
+    background-color: #f5f5f5;
     padding: 20px;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #1F2544;
+    /*box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);*/
     z-index: 100;
 }
 
@@ -41,13 +41,13 @@ img {
   margin: 0 auto;
   padding: 20px;
   width: 100%;
-  margin-top: 8%;
+  /* margin-top: 8%; */
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 20px;
+  margin-bottom: 100px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -117,8 +117,14 @@ img {
 }
 
 .input-form {
+  position: fixed;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  background: #f5f5f5;
+  padding: 20px;
   display: flex;
-  margin-top: 20px;
 }
 
 input {
@@ -155,6 +161,7 @@ button:disabled {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 100px;
 }
 
 .typing-indicator span {

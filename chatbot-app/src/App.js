@@ -6,8 +6,12 @@ import "./App.css";
 
 function App() {
   const [messages, setMessages] = useState([]);
+  const [hideHeader, setHideHeader] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streamingIndex, setStreamingIndex] = useState(-1);
+  const [streamingText, setStreamingText] = useState("");
+  const [messageQueue, setMessageQueue] = useState([]);
   const messagesEndRef = useRef(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
@@ -26,6 +30,36 @@ function App() {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (messageQueue.length > 0 && streamingIndex === -1) {
+      const nextMessage = messageQueue[0];
+      setStreamingIndex(nextMessage.index);
+      streamMessage(nextMessage.text, nextMessage.index);
+      setMessageQueue(prev => prev.slice(1));
+    }
+  }, [messageQueue, streamingIndex]);
+  
+  const streamMessage = (message, index) => {
+    const words = message.split(" ");
+    let currentWord = 0;
+
+    const streamInterval = setInterval(() => {
+      if (currentWord <= words.length) {
+        setStreamingText(words.slice(0, currentWord).join(" "));
+        currentWord++;
+      } else {
+        clearInterval(streamInterval);
+        setStreamingIndex(-1);
+        setStreamingText("");
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[index].text = message;
+          return updated;
+        });
+      }
+    }, 20);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -34,6 +68,7 @@ function App() {
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
     setLoading(true);
+    setHideHeader(true);
 
     try {
       const res = await axios.post(url, {
@@ -42,38 +77,57 @@ function App() {
       });
 
       const data = res.data;
-      const structuredMessages = [];
       const response = JSON.parse(data.value);
+      let newMessages = [];
+      let queuedMessages = [];
 
       console.log(response);
 
       if (response.default) {
-        structuredMessages.push({ text: response.default, sender: "bot" });
+        const msg = { text: response.default, sender: "bot", streaming: true };
+        newMessages.push(msg);
       }
 
       if (response.initial) {
-        structuredMessages.push({
+        const msg = {
           text: response.initial.message.replace("-", ""),
           sender: "bot",
-        });
+          streaming: true
+        };
+        newMessages.push(msg);
       }
 
-      console.log(response.products);
       if (response.products && response.products.length > 0) {
-        structuredMessages.push({
+        newMessages.push({
           sender: "products",
           items: response.products,
         });
       }
 
       if (response.final) {
-        structuredMessages.push({
+        const msg = {
           text: response.final.message.replace("-", ""),
           sender: "bot",
-        });
+          streaming: true
+        };
+        newMessages.push(msg);
       }
 
-      setMessages((prevMessages) => [...prevMessages, ...structuredMessages]);
+      setMessages(prev => {
+        const updatedMessages = [...prev, ...newMessages];
+        // Queue all streaming messages
+        queuedMessages = newMessages
+          .map((msg, idx) => ({
+            text: msg.text,
+            index: prev.length + idx,
+            streaming: msg.streaming
+          }))
+          .filter(msg => msg.streaming);
+
+        setMessageQueue(queuedMessages);
+        return updatedMessages;
+      });
+
     } catch (err) {
       console.error(err);
       const errorMessage = {
@@ -88,9 +142,11 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>PickSmart: AI-Powered Product Search</h1>
-      </header>
+      {!hideHeader && (
+        <header className="App-header">
+          <h1>PickSmart: AI-Powered Product Search</h1>
+        </header>
+      )}
       <div className="chat-container">
         <div className="messages">
           {messages.map((message, index) =>
@@ -107,7 +163,7 @@ function App() {
             ) : (
               <div key={index} className={`message ${message.sender}`}>
                 {message.sender === "bot" && <FaRobot className="bot-icon" />}
-                {message.text}
+                {index === streamingIndex && message.streaming ? streamingText : message.text}
               </div>
             )
           )}
