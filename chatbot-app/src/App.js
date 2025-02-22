@@ -81,8 +81,6 @@ function App() {
       let newMessages = [];
       let queuedMessages = [];
 
-      console.log(response);
-
       if (response.default) {
         const msg = { text: response.default, sender: "bot", streaming: true };
         newMessages.push(msg);
@@ -155,7 +153,7 @@ function App() {
                 {message.items.map((product, i) => (
                   <div key={i} className="products">
                     <h5>{product.title}</h5>
-                    <img src="https://www.hp.com/gb-en/shop/Html/Merch/Images/8A491EA-ABU_5_1750x1285.jpg" alt={product.title} /> {/* for demo */}
+                    <img src={product.image} alt={product.title} />
                     <p>{product.description}</p>
                   </div>
                 ))}
