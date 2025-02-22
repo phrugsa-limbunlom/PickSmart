@@ -1,6 +1,7 @@
 import logging
 
 import requests
+import json
 from data.SearchAgentState import SearchAgentState
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -24,16 +25,16 @@ class SearchAgent:
         graph.add_node("search_vector_store", self.search_vector_node)
         graph.add_node("search_online_shop", self.search_online_node)
         graph.add_node("analyze_and_rank", self.analyze_rank_node)
-        # graph.add_node("find_product_source", self.find_source_node)
+        graph.add_node("search_image", self.search_image)
         graph.set_entry_point("analyze_query")
-        graph.add_edge("analyze_query", "search_vector_store")
         graph.add_conditional_edges(
             "search_vector_store",
             self.should_continue,
             {False: "search_online_shop", True: "analyze_and_rank"}
         )
+        graph.add_edge("analyze_query", "search_vector_store")
         graph.add_edge("search_online_shop", "analyze_and_rank")
-        # graph.add_edge("analyze_and_rank", "find_product_source")
+        graph.add_edge("analyze_and_rank", "search_image")
         graph.set_finish_point("analyze_and_rank")
         self.graph = graph.compile(checkpointer=checkpointer)
         # self.graph = graph.compile()
@@ -114,75 +115,23 @@ class SearchAgent:
             PromptMessage.ANALYZE_RANK_HUMAN_PROMPT
         ]).invoke({"products": state["relevant_products"], "requirements": state["user_query"]}).to_string()
 
-        return {"result": self.call_client(prompt=prompt)}
+        return {"analyze_result": self.call_client(prompt)}
 
-    # def find_source_node(self, state: SearchAgentState):
-    #
-    #     results = json.loads(state['result'])
-    #
-    #     for result in results["products"]:
-    #         for k, v in list(result.items()):
-    #             query = f"find source url for this product {v} from online shopping website"
-    #             response = self.tool.search(query=query, max_results=6)
-    #             result.update({"Source": response['results'][0]['url']})
-    #
-    #     return {"final_result": results}
+    def search_image(self, state: SearchAgentState):
+        analyze_result = state["analyze_result"]
 
-    # def find_source_node(self, state: SearchAgentState):
-    #     with sync_playwright() as p:
-    #         results = json.loads(state['result'])
-    #
-    #         browser = p.chromium.launch(headless=False,
-    #                                     slow_mo=100,
-    #                                     args=[
-    #                                         '--disable-features=ImprovedCookieControls'
-    #                                     ])
-    #         context = browser.new_context(ignore_https_errors=True)
-    #
-    #         context.add_cookies([
-    #             {
-    #                 'name': 'session_id',
-    #                 'value': 'abc123',
-    #                 'domain': 'example.com',
-    #                 'path': '/'
-    #             }
-    #         ])
-    #         page = context.new_page()
-    #
-    #         for result in results["products"]:
-    #             for k, v in list(result.items()):
-    #
-    #                 page.goto(f"https://www.google.com")
-    #                 page.click('text=Accept')
-    #
-    #                 search_box = page.locator("input[name='q']")
-    #                 search_box.fill(v)
-    #                 search_box.press("Enter")
-    #
-    #                 page.wait_for_selector("text=Shopping")
-    #                 page.locator("text=Shopping").click()
-    #
-    #                 page.wait_for_selector(".sh-dgr__content", timeout=10000)
-    #
-    #                 product_cards = page.query_selector_all(".sh-dgr__content")
-    #
-    #                 for card in product_cards:
-    #                     try:
-    #                         link_element = card.query_selector("a")
-    #                         image_element = card.query_selector("img")
-    #
-    #                         r = {
-    #                             "link": link_element.get_attribute("href"),
-    #                             "image": image_element.get_attribute("src") if image_element else None
-    #                         }
-    #                         result.update(r)
-    #                         break
-    #                     except:
-    #                         continue
-    #
-    #         browser.close()
-    #
-    #     return {"final_result": results}
+        analyze_result = json.loads(analyze_result)
+
+        product_tiles = [product["title"] for product in analyze_result["products"]]
+
+        search_result = list(map(lambda title : self.tool.search(query=title, max_results=1, include_images=True), product_tiles))
+
+        product_images = [search["images"][0] or "" for search in search_result]
+
+        for idx,product in enumerate(analyze_result["products"]):
+            product["image"] = product_images[idx]
+
+        return {"result": analyze_result}
 
     def should_continue(self, state: SearchAgentState):
 
