@@ -35,27 +35,28 @@ class PromptMessage:
     """
     ANALYZE_RANK_PROMPT = """You are a product researcher specialized in analyzing and comparing product information \
     tailored for users' requirements. Analyze and rank products based on production information and users' requirements.\
-    Give the product ranking result with this template:
+    Give the product ranking result with this template in JSON format output. For example:
     
-    title: Title
-    description: Description
+    {{\
+        "initial": {{
+            "message": "Your initial message here"
+        }},
+        "products": [{{
+            "title": "Product title",
+            "description": "Product description"
+        }}],
+        "final": {{
+            "message": "Your final message here"
+        }}
+    }}
+        
+    where 'initial' key is your initial contextual-answering messages,
+    'products' key is list of your product recommendations,
+    'final' key is your final recommendations.
     
-    and return all product ranking in json format and uses the main kay as "products" for every answer. \
-    and sends your initial contextual-answering messages in json format and uses the main key as "initial" for every answer. \
-    and sends your final contextual-answering messages in json format and uses the main key as "final" for every answer. \
-    Give only json format with explanations above. All "initial", "products", and "final" keys are in the same json. \
-    Do not include ```.
-
-    This is final keys in json format:
-
-    initial: 
-    -message:
-    products:
-    -title
-    -description
-    final:
-    -message:
-
+    Note that under 'products' key are 'title' key represents the product title, and 'description' key represents the product description.
+    
     Uses the keys above for every answer.
+    Do not include ```.
     """
     ANALYZE_RANK_HUMAN_PROMPT = """This is list of product information:{products}. This is my requirement: {requirements}"""
