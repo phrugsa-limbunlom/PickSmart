@@ -87,11 +87,11 @@ class ChatbotService:
                                 client=self.client,
                                 checkpointer=memory)
 
+            logger.info("Thread ID: ", self.thread_id)
             thread = {"configurable": {"thread_id": self.thread_id}}
-
             response = agent.graph.invoke({"user_query": query},thread)
 
-        return json.dumps(response['result'])
+            return json.dumps(response['result'])
 
     def initialize_service(self):
         logger.info("Initialize the service")
