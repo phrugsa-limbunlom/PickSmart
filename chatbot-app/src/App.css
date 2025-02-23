@@ -61,6 +61,7 @@ img {
   clear: both;
   word-wrap: break-word;
   text-align: left;
+  font-size: 14px; /* Set explicit font size for messages */
 }
 
 .user {
@@ -94,13 +95,47 @@ img {
   background-color: white;
   color: black;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 20px;
   box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: calc(33.33% - 10px);
+  min-height: fit-content; /* Changed from fixed height to fit-content */
 
-  /* Square dimensions */
-  width: calc(33.33% - 10px); /* Account for gap spacing */
-  aspect-ratio: 1/1; /* Maintain square shape */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px; /* Add consistent spacing between elements */
+}
+
+.products h5 {
+  margin: 0;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.products img {
+  width: 150px;
+  height: 150px; /* Fixed height */
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+}
+
+.products p {
+  margin: 0;
+  padding: 0 10px;
+  width: 100%;
+  text-align: left; /* Changed to left align like bot messages */
+  font-size: 14px; /* Match bot message font size */
+  line-height: 1.5;
+  /* Remove text truncation */
+  overflow: visible;
+  text-overflow: initial;
+  display: block;
+  -webkit-line-clamp: initial;
+  -webkit-box-orient: initial;
 }
 
 .bot-icon {
@@ -191,4 +226,21 @@ button:disabled {
   50% {
     opacity: 1;
   }
+}
+
+.visit-button {
+  margin-top: auto; /* Push button to bottom */
+  margin-bottom: 10px;
+  padding: 8px 24px;
+  background-color: #474F7A;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+
+.visit-button:hover {
+  background-color: #81689D;
 }

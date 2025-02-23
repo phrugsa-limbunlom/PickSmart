@@ -155,6 +155,14 @@ function App() {
                     <h5>{product.title}</h5>
                     <img src={product.image} alt={product.title} />
                     <p>{product.description}</p>
+                    <a 
+                      href={product.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="visit-button"
+                    >
+                      Visit
+                    </a>
                   </div>
                 ))}
               </div>
