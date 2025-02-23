@@ -22,11 +22,11 @@ class SearchAgent:
         graph.add_node("analyze_query", self.analyze_query_node)
         graph.add_node("search_online_shop", self.search_online_node)
         graph.add_node("analyze_and_rank", self.analyze_rank_node)
-        graph.add_node("search_image", self.search_image)
+        graph.add_node("search_product_source", self.search_source_node)
         graph.set_entry_point("analyze_query")
         graph.add_edge("analyze_query", "search_online_shop")
         graph.add_edge("search_online_shop", "analyze_and_rank")
-        graph.add_edge("analyze_and_rank", "search_image")
+        graph.add_edge("analyze_and_rank", "search_product_source")
         graph.set_finish_point("analyze_and_rank")
         self.graph = graph.compile(checkpointer=checkpointer)
 
@@ -90,18 +90,25 @@ class SearchAgent:
 
         return {"analyze_result": self.call_client(prompt)}
 
-    def search_image(self, state: SearchAgentState):
+    def search_source_node(self, state: SearchAgentState):
         analyze_result = state["analyze_result"]
 
         analyze_result = json.loads(analyze_result)
 
         product_tiles = [product["title"] for product in analyze_result["products"]]
 
-        search_result = list(map(lambda title : self.tool.search(query=title, max_results=1, include_images=True), product_tiles))
+        query = "find the url source from e-commerce website for purchasing products only based on this product title {}"
+
+        search_result = list(
+            map(lambda title: self.tool.search(query=query.format(title), max_results=1, include_images=True),
+                product_tiles))
 
         product_images = [search["images"][0] or "" for search in search_result]
 
-        for idx,product in enumerate(analyze_result["products"]):
-            product["image"] = product_images[idx]
+        product_urls = [search["results"][0]["url"] or "" for search in search_result]
 
+        for idx, product in enumerate(analyze_result["products"]):
+            product["image"] = product_images[idx]
+            product["url"] = product_urls[idx]
+        print(analyze_result)
         return {"result": analyze_result}
