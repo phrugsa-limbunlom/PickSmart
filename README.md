@@ -4,131 +4,174 @@
 </div>
 <br>
 <p align="center">
-AI-powered shopping assistant for real-time product search with contextual question-answering and personalized product recommendations empowered by the intelligent search agent and RAG system.
+AI-powered shopping assistant platform for real-time product search with contextual question-answering and personalized product recommendations empowered by intelligent search and analyze agents.
 </p>
 <br>
 
-![image](https://github.com/user-attachments/assets/01c8e4f4-d6ab-4b3d-b63f-1e692f0cc24c)
+![image](https://github.com/user-attachments/assets/3d2d0ca7-cfa9-4fec-8b2c-c802e5134411)
 
-## Usage
-💬 Ask a question about a product.
 
-🔍 Search multiple marketplaces and rank the results.
+## 📌 Overview
 
-⭐ Receive personalized recommendations.
+PickSmart is a distributed and AI-powered product discovery platform that leverages advanced natural language processing and distributed systems to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with multi-agent planning for intelligent product discovery across multiple e-commerce marketplaces.
 
-## Features
-🧠 User query analysis: Converts user queries into three search-friendly queries.
 
-🛒 Online shop integration: Loads and stores data from online marketplaces in a vector database.
+## 🚀 Usage
+- Ask a question about a product.
+- Search multiple marketplaces and rank the results.
+- Receive personalized recommendations.
 
-⚡ Real-time online search: Searches and retrieves online stores based on user queries.
 
-🎯 Product filtering: Extracts and ranks the most relevant products.
+## ⚡Core Capabilities
 
-💬 Contextual response generation: Provides detailed answers with personalized recommendations.
+- **Natural Language Query Processing**: Advanced query decomposition and semantic analysis
+- **Vector Database Integration**: Efficient data ingestion and storage for embedding-based semantic retrieval.
+- **Distributed Real-time Search**: Multi-marketplace product discovery with parallel processing
+- **Intelligent Product Ranking**: AI-powered relevance scoring and personalization
+- **Context-Aware Recommendations**: Detailed answers with product suggestions
+- **Scalable Data Processing**: Event-driven architecture for high-throughput data handling
 
-## Demo
 
-https://github.com/user-attachments/assets/04dfc77b-18fb-4dbc-b85c-22152af938ed
+## 🎥 Demo
 
-## Tech Stack
-⚛️ **Frontend**: React
+https://github.com/user-attachments/assets/c7230b6a-3e9b-4275-9f53-0014dcc3e2a1
 
-🚀 **Backend**: FastAPI
 
-🔄 **Streaming**: Kafka
 
-🧠 **RAG System**: LangChain, Chroma (vector store)
+## 🛠️ Tech Stack
+- **Frontend**: React
+- **Backend**: FastAPI
+- **Streaming**: Kafka
+- **RAG System**: LangChain, Chroma (vector store)
+- **Agents**: LangGraph, Tavily (search)
+- **API Client**: Groq API
 
-🤖 **Agents**: LangGraph, Tavily (search)
 
-📡 **API Client**: Groq API
+## 📐Technical Architecture
 
-## Agent Actions
-1. **Analyze User Query**: Converts user input into three search-friendly queries.  
-2. **Search Vector Store**: Retrieves product from vector database. If no products are relevant, search from online websites.
-3. **Search Online Shops**: Retrieves product data from online stores based on the generated queries.  
-4. **Find Relevant Products**: Filters and extracts relevant items.  
-5. **Rank and Recommend**: Analyzes search results and ranks products for the user.
+### Frontend Layer
+- **Framework**: React.js with TypeScript
+- **State Management**: Redux for predictable state container
+- **API Integration**: Axios for HTTP client
 
- ```python
-        graph = StateGraph(SearchAgentState)
-        graph.add_node("analyze_query", self.analyze_query_node)
-        graph.add_node("search_vector_store", self.search_vector_node)
-        graph.add_node("search_online_shop", self.search_online_node)
-        graph.add_node("analyze_and_rank", self.analyze_rank_node)
-        graph.set_entry_point("analyze_query")
-        graph.add_edge("analyze_query", "search_vector_store")
-        graph.add_conditional_edges(
-            "search_vector_store",
-            self.should_continue,
-            {False: "search_online_shop", True: "analyze_and_rank"}
-        )
-        graph.add_edge("search_online_shop", "analyze_and_rank")
-        graph.set_finish_point("analyze_and_rank")
-        self.graph = graph.compile(checkpointer=checkpointer)
- ```
+### Backend Services
+- **API Framework**: FastAPI with asynchronous request handling and high-performance routing
+- **Message Broker**: Apache Kafka for event streaming and distributed processing
+- **Vector Store**: Chroma DB for efficient similarity search and embedding storage
+- **Search Engine**: Tavily API integration for enhanced web search capabilities
 
-## Configuration
+### AI Components
+- **LLM Integration**: Groq API for high-performance inference
+- **Agent Framework**: LangChain for composable AI components
+- **Workflow Orchestration**: LangGraph for agent coordination and planning
+- **Embedding Models**: Support for multiple embedding architectures
+- **RAG System**: Custom implementation with semantic caching
 
-Configure API keys in the `.env` file:
-   ```env
-    GROQ_API_KEY="<API_KEY>"
-    TAVILY_API_KEY="<API_KEY>"
-   ```
-Configure the Embedding model and LLM model in `model.yaml` file:
-   ```env
-   LLM: <LLM_MODEL>
-   EMBEDDING: <EMBEDDING_MODEL>
-   ```
+### Agent Architecture
 
-## Running with Docker
+The system implements a sophisticated multi-agent workflow using LangGraph for orchestration:
 
-Skip manual installation and configuration by deploying all services in Docker containers. The application will be hosted on `localhost:3000`.
+```python
+graph = StateGraph(SearchAgentState)
+graph.add_node("analyze_query", self.analyze_query_node)
+graph.add_node("search_online_shop", self.search_online_node)
+graph.add_node("analyze_and_rank", self.analyze_rank_node)
+graph.add_node("search_product_source", self.search_source_node)
+graph.set_entry_point("analyze_query")
+graph.add_edge("analyze_query", "search_online_shop")
+graph.add_edge("search_online_shop", "analyze_and_rank")
+graph.add_edge("analyze_and_rank", "search_product_source")
+graph.set_finish_point("analyze_and_rank")
+self.graph = graph.compile(checkpointer=checkpointer)
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/phrugsa-limbunlom/PickSmart.git
-   cd PickSmart
-   ```
-2. Create a Docker network called  `chatbot-network`:
-   ```bash
-   docker network create chatbot-network
-   ```
-3. Build and launch all services using Docker Compose:
-
-   ```bash
-   docker-compose up --build
-   ```
+Agent responsibilities include:
+1. **Query Analysis Agent**: Semantic decomposition and intent classification
+2. **Search Orchestration Agent**: Distributed marketplace search coordination
+3. **Ranking Agent**: Multi-criteria product evaluation and scoring
+4. **E-commerce Discovery Agent**: Discovery product sources across multiple e-commerce platforms to provide direct purchase links
    
-## Installation & Setup
+## ⚙️ Configuration
+
+### Environment Variables
+Create ```.env``` file under ```chatbot-server``` folder and add API keys as below:
+
+```env
+GROQ_API_KEY="<API_KEY>"
+TAVILY_API_KEY="<API_KEY>"
+```
+- To get Groq api key: https://console.groq.com/keys
+- To get Tavily api key: https://tavily.com/
+
+### Model Configuration
+
+Configure the LLM model and Embedding models in ```model.yaml``` file:
+```yaml
+LLM: <LLM_MODEL>
+EMBEDDING: <EMBEDDING_MODEL>
+```
+
+## 🚢 Deployment
+
+### Docker Deployment
+The application supports containerized deployment using Docker and Docker Compose for simplified orchestration.
+
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/phrugsa-limbunlom/PickSmart.git
-   cd PickSmart
-   ```
+```bash
+git clone https://github.com/phrugsa-limbunlom/PickSmart.git
+cd PickSmart
+```
+
+2. Create the network:
+```bash
+docker network create chatbot-network
+```
+
+3. Deploy services:
+```bash
+docker-compose up --build
+```
+
+The application will be accessible at `localhost:3000`.
+
+### Manual Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/phrugsa-limbunlom/PickSmart.git
+cd PickSmart
+```
 
 2. Install backend dependencies:
-   ```bash
-   pip install -r /chatbot-server/requirements.txt
-   ```
+```bash
+pip install -r /chatbot-server/requirements.txt
+```
 
 3. Install frontend dependencies:
-   ```bash
-   cd chatbot-app
-   npm install
-   ```
+```bash
+cd chatbot-app
+npm install
+```
 
-4. Start the Kafka service.
+4. Initialize Kafka services
 
+5. Launch backend server:
+```bash
+uvicorn main:app --reload
+```
 
-5. Run the backend:
-   ```bash
-   uvicorn main:app --reload
-   ```
+6. Start frontend application:
+```bash
+npm start
+```
 
-6. Run the frontend:
-   ```bash
-   npm start
-   ```
+## 💻 System Requirements
+- Python 3.8+
+- Node.js 14+
+- Docker 20.10+
+- Docker Compose 2.0+
+- 8GB RAM minimum
+- 4 CPU cores recommended
+
+## 📜 License
+PickSmart is released under the MIT License. See the [LICENSE](https://github.com/phrugsa-limbunlom/PickSmart/blob/main/LICENSE) file for more details.
