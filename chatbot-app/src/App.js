@@ -142,7 +142,7 @@ function App() {
     <div className="App">
       {!hideHeader && (
         <header className="App-header">
-          <h1>PickSmart: AI-Powered Product Search</h1>
+          <h1>PickSmart</h1>
         </header>
       )}
       <div className="chat-container">
@@ -185,20 +185,22 @@ function App() {
           <div ref={messagesEndRef} />
         </div>
         <form onSubmit={handleSubmit} className="input-form">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="p-2 rounded-full bg-blue-500 text-white disabled:opacity-50"
-          >
-            <Send size={20} />
-          </button>
+          <div>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about products..."
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              aria-label="Send message"
+            >
+              <Send size={18} />
+            </button>
+          </div>
         </form>
       </div>
     </div>
