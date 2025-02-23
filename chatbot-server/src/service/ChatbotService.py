@@ -1,6 +1,8 @@
 import logging
 import os
 import json
+import uuid
+
 import requests.exceptions
 from agent.SearchAgent import SearchAgent
 from dotenv import load_dotenv, find_dotenv
@@ -25,6 +27,7 @@ class ChatbotService:
         self.embedding_model = None
         self.retrievers = None
         self.tool = None
+        self.thread_id = str(uuid.uuid4())
 
     def query_groq_api(self, client, prompt, model):
         """Query the Groq API directly and return the response."""
@@ -77,13 +80,18 @@ class ChatbotService:
         if not self.is_query_relevant(query):
             return json.dumps({"default" : PromptMessage.Default_Message})
 
-        agent = SearchAgent(llm_model=self.llm_model,
+        with SqliteSaver.from_conn_string(":memory:") as memory:
+            agent = SearchAgent(llm_model=self.llm_model,
                                 embedding_model=self.embedding_model,
                                 tool=self.tool,
-                                client=self.client)
-        response = agent.graph.invoke({"user_query": query})
+                                client=self.client,
+                                checkpointer=memory)
 
-        return json.dumps(response['result'])
+            logger.info("Thread ID: ", self.thread_id)
+            thread = {"configurable": {"thread_id": self.thread_id}}
+            response = agent.graph.invoke({"user_query": query},thread)
+
+            return json.dumps(response['result'])
 
     def initialize_service(self):
         logger.info("Initialize the service")
