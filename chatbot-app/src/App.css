@@ -61,7 +61,7 @@ img {
   clear: both;
   word-wrap: break-word;
   text-align: left;
-  font-size: 14px; /* Set explicit font size for messages */
+  font-size: 14px;
 }
 
 .user {
@@ -86,9 +86,9 @@ img {
 
 .products-container {
   display: flex;
-  gap: 15px; /* Space between cards */
-  flex-wrap: wrap; /* Allow wrapping if screen is too small */
-  justify-content: center; /* Center align the product cards */
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .products {
@@ -99,12 +99,12 @@ img {
   box-sizing: border-box;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   width: calc(33.33% - 10px);
-  min-height: fit-content; /* Changed from fixed height to fit-content */
+  min-height: fit-content;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px; /* Add consistent spacing between elements */
+  gap: 15px;
 }
 
 .products h5 {
@@ -113,11 +113,12 @@ img {
   width: 100%;
   text-align: center;
   font-size: 1.1rem;
+  color: #1F2544;
 }
 
 .products img {
   width: 150px;
-  height: 150px; /* Fixed height */
+  height: 150px;
   object-fit: contain;
   margin: 0;
   padding: 0;
@@ -127,8 +128,8 @@ img {
   margin: 0;
   padding: 0 10px;
   width: 100%;
-  text-align: left; /* Changed to left align like bot messages */
-  font-size: 14px; /* Match bot message font size */
+  text-align: center; 
+  font-size: 14px;
   line-height: 1.5;
   /* Remove text truncation */
   overflow: visible;
