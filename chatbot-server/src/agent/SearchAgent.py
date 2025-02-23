@@ -1,14 +1,12 @@
+import json
 import logging
 
 import requests
-import json
 from data.SearchAgentState import SearchAgentState
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
-from service.VectorStoreService import VectorStoreService
 from text.PromptMessage import PromptMessage
-from text.WebURLs import WebURLs
 
 logger = logging.getLogger(__name__)
 
@@ -22,22 +20,15 @@ class SearchAgent:
         self.client = client
         graph = StateGraph(SearchAgentState)
         graph.add_node("analyze_query", self.analyze_query_node)
-        graph.add_node("search_vector_store", self.search_vector_node)
         graph.add_node("search_online_shop", self.search_online_node)
         graph.add_node("analyze_and_rank", self.analyze_rank_node)
         graph.add_node("search_image", self.search_image)
         graph.set_entry_point("analyze_query")
-        graph.add_conditional_edges(
-            "search_vector_store",
-            self.should_continue,
-            {False: "search_online_shop", True: "analyze_and_rank"}
-        )
-        graph.add_edge("analyze_query", "search_vector_store")
+        graph.add_edge("analyze_query", "search_online_shop")
         graph.add_edge("search_online_shop", "analyze_and_rank")
         graph.add_edge("analyze_and_rank", "search_image")
         graph.set_finish_point("analyze_and_rank")
         self.graph = graph.compile(checkpointer=checkpointer)
-        # self.graph = graph.compile()
 
     def call_client(self, prompt: str):
         try:
@@ -75,27 +66,9 @@ class SearchAgent:
 
         return {"revised_query": queries}
 
-    def search_vector_node(self, state: SearchAgentState):
-        urls = [WebURLs.Amazon, WebURLs.Ebay]
-
-        vector_retrievers = VectorStoreService(self.embedding_model).load_vector_store(urls)
-
-        vector_retriever_amazon = vector_retrievers["amazon"]
-        vector_retriever_ebay = vector_retrievers["ebay"]
-
-        products = ""
-        for query in state["revised_query"]:
-            amazon_products = vector_retriever_amazon.invoke(query)
-            ebay_products = vector_retriever_ebay.invoke(query)
-
-            products = " ".join([doc.page_content for doc in amazon_products])
-            products = products.join([doc.page_content for doc in ebay_products])
-
-        return {"relevant_products": products}
-
     def search_online_node(self, state: SearchAgentState):
 
-        products = state['relevant_products'] or []
+        products = []
 
         for query in state['revised_query']:
 
@@ -132,11 +105,3 @@ class SearchAgent:
             product["image"] = product_images[idx]
 
         return {"result": analyze_result}
-
-    def should_continue(self, state: SearchAgentState):
-
-        if state["relevant_products"] == "":
-            logger.info(f"Couldn't find the relevant products from vector store")
-            logger.info(f"Start searching products online...")
-
-        return state["relevant_products"] != ""
