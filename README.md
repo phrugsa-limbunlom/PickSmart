@@ -34,7 +34,8 @@ PickSmart is a distributed and AI-powered product discovery platform that levera
 
 ## 🎥 Demo
 
-https://github.com/user-attachments/assets/c7230b6a-3e9b-4275-9f53-0014dcc3e2a1
+
+https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 
 
 
