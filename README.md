@@ -4,7 +4,7 @@
 </div>
 <br>
 <p align="center">
-AI-powered shopping assistant platform for real-time product search with contextual question-answering and personalized product recommendations empowered by intelligent search and analyze agents.
+AI-powered shopping assistant platform for real-time product search with contextual question-answering and personalized product recommendations empowered by the intelligent search and analyst agent:
 </p>
 <br>
 
@@ -13,7 +13,7 @@ AI-powered shopping assistant platform for real-time product search with context
 
 ## 📌 Overview
 
-PickSmart is a distributed and AI-powered product discovery platform that leverages advanced natural language processing and distributed systems to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with multi-agent planning for intelligent product discovery across multiple e-commerce marketplaces.
+PickSmart is a distributed and AI-powered product discovery platform that leverages the large language model and distributed system to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent for product discovery across multiple e-commerce marketplaces.
 
 
 ## 🚀 Usage
@@ -70,7 +70,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 
 ### Agent Architecture
 
-The system implements a sophisticated multi-agent workflow using LangGraph for orchestration:
+The system implements a search and analyze agent with a multi-step workflow using LangGraph for orchestration:
 
 ```python
 graph = StateGraph(SearchAgentState)
