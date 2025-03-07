@@ -9,6 +9,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pymongo import MongoClient
 from pymongo.operations import SearchIndexModel
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
 logger = logging.getLogger(__name__)
 
 class VectorStoreService:

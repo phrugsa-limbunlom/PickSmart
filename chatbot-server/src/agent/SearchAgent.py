@@ -8,6 +8,12 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
 from text.PromptMessage import PromptMessage
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+
 logger = logging.getLogger(__name__)
 
 class SearchAgent:

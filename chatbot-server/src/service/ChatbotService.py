@@ -19,6 +19,11 @@ from text.WebURLs import WebURLs
 from util.util import Util
 
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
 logger = logging.getLogger(__name__)
 
 
