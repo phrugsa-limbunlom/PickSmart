@@ -1,17 +1,24 @@
 import logging
 import os
+import time
 
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import WebBaseLoader, TextLoader
+from langchain_community.document_loaders import WebBaseLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pymongo import MongoClient
+from pymongo.operations import SearchIndexModel
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 logger = logging.getLogger(__name__)
 
-
 class VectorStoreService:
 
-    def __init__(self, embedding_model):
+    def __init__(self, embedding_model=None):
         self.embedding_model = embedding_model
 
     def load_vector_store(self, urls):
@@ -53,3 +60,54 @@ class VectorStoreService:
             vector_retrievers.update({domain: vector_retriever})
 
         return vector_retrievers
+
+    def create_vector_index(self, uri, db):
+
+        client = MongoClient(uri)
+
+        collection_name = "embedded_picksmart"
+        collection = db.get_collection(collection_name)
+
+        collection_list = db.list_collection_names()
+
+        for collection in collection_list:
+            if collection == collection_name:
+                logger.info(f"Collection '{collection}' already exists. Skip creating vector index.")
+                client.close()
+            return client
+
+        search_index_model = SearchIndexModel(
+            definition={
+                "fields": [
+                    {
+                        "type": "vector",
+                        "path": "product_title_embedding",
+                        "numDimensions": 1024,
+                        "similarity": "cosine",
+                        "quantization": "scalar"
+                    }
+                ]
+            },
+            name="pick_smart_vector_index",
+            type="vectorSearch",
+        )
+        result = collection.create_search_index(model=search_index_model)
+        logger.info("New search index named " + result + " is building.")
+
+        # Wait for initial sync to complete
+        logger.info("Polling to check if the index is ready. This may take up to a minute.")
+
+        predicate = None
+        if predicate is None:
+            predicate = lambda index: index.get("queryable") is True
+        while True:
+            indices = list(collection.list_search_indexes(result))
+            if len(indices) and predicate(indices[0]):
+                break
+            time.sleep(5)
+
+        logger.info(result + " is ready for querying.")
+
+        client.close()
+
+        return client

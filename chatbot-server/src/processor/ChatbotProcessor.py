@@ -2,8 +2,12 @@ import logging
 import uuid
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
+logger = logging.getLogger(__name__)
 
 class ChatbotProcessor:
     def __init__(self, service, producer, consumer, server, input_topic, output_topic):

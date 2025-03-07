@@ -17,3 +17,6 @@ bs4==0.0.2
 langgraph==0.2.74
 langgraph-checkpoint-sqlite==2.0.5
 tavily-python==0.5.1
+pymongo==4.11.2
+urllib3==2.3.0
+cohere==5.14.0
