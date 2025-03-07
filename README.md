@@ -1,6 +1,6 @@
 <h1 align="center"> PickSmart 🛒 </h1>
 <div align="center">
-<img alt="Langchain" src="https://img.shields.io/badge/-Langchain-013243?style=flat&logo=langchain&logoColor=white"> <img alt="Langgraph" src="https://img.shields.io/badge/-Langgraph-013243?style=flat&logo=Langgraph&logoColor=white"> <img alt="Tavily" src="https://img.shields.io/badge/-Tavily-231F20?style=flat&logo=Tavily&logoColor=white"> <img alt="Chroma" src="https://img.shields.io/badge/-Chroma-231F20?style=flat&logo=chroma&logoColor=white"><img alt="Tavily" src="https://img.shields.io/badge/-Groq-231F20?style=flat&logo=Groq&logoColor=white"><img alt="FastAPI" src="https://img.shields.io/badge/-Fastapi-009688?style=flat&logo=Fastapi&logoColor=white"> <img alt="Kafka" src="https://img.shields.io/badge/-Kafka-231F20?style=flat&logo=kafka&logoColor=white">
+<img alt="Langchain" src="https://img.shields.io/badge/-Langchain-013243?style=flat&logo=langchain&logoColor=white"> <img alt="Langgraph" src="https://img.shields.io/badge/-Langgraph-013243?style=flat&logo=Langgraph&logoColor=white"> <img alt="Tavily" src="https://img.shields.io/badge/-Tavily-231F20?style=flat&logo=Tavily&logoColor=white"> <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=flat&logo=mongodb&logoColor=white"><img alt="Tavily" src="https://img.shields.io/badge/-Groq-231F20?style=flat&logo=Groq&logoColor=white"><img alt="FastAPI" src="https://img.shields.io/badge/-Fastapi-009688?style=flat&logo=Fastapi&logoColor=white"> <img alt="Kafka" src="https://img.shields.io/badge/-Kafka-231F20?style=flat&logo=kafka&logoColor=white">
 </div>
 <br>
 <p align="center">
@@ -13,7 +13,7 @@ AI-powered shopping assistant platform for real-time product search with context
 
 ## 📌 Overview
 
-PickSmart is a distributed and AI-powered product discovery platform that leverages the large language model and distributed system to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent for product discovery across multiple e-commerce marketplaces.
+PickSmart is a distributed and AI-powered product discovery platform that leverages the large language model and distributed system to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
 
 
 ## 🚀 Usage
@@ -43,7 +43,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **Frontend**: React
 - **Backend**: FastAPI
 - **Streaming**: Kafka
-- **RAG System**: LangChain, Chroma (vector store)
+- **RAG System**: LangChain, MongoDB (vector store)
 - **Agents**: LangGraph, Tavily (search)
 - **API Client**: Groq API
 
@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 ### Backend Services
 - **API Framework**: FastAPI with asynchronous request handling and high-performance routing
 - **Message Broker**: Apache Kafka for event streaming and distributed processing
-- **Vector Store**: Chroma DB for efficient similarity search and embedding storage
+- **Vector Store**: MongoDB for efficient similarity search and embedding storage
 - **Search Engine**: Tavily API integration for enhanced web search capabilities
 
 ### AI Components
@@ -88,7 +88,7 @@ self.graph = graph.compile(checkpointer=checkpointer)
 
 Agent responsibilities include:
 1. **Query Analysis Agent**: Semantic decomposition and intent classification
-2. **Search Orchestration Agent**: Distributed marketplace search coordination
+2. **Search Orchestration Agent**: Leveraging vector store search and distributed online search
 3. **Ranking Agent**: Multi-criteria product evaluation and scoring
 4. **E-commerce Discovery Agent**: Discovery product sources across multiple e-commerce platforms to provide direct purchase links
    
