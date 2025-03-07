@@ -66,7 +66,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **Agent Framework**: LangChain for composable AI components
 - **Workflow Orchestration**: LangGraph for agent coordination and planning
 - **Embedding Models**: Support for multiple embedding architectures
-- **RAG System**: Custom implementation with semantic caching
+- **RAG System**: MongoDB for vector index implementation and semantic retrieval
 
 ### Agent Architecture
 
@@ -95,14 +95,21 @@ Agent responsibilities include:
 ## ⚙️ Configuration
 
 ### Environment Variables
-Create ```.env``` file under ```chatbot-server``` folder and add API keys as below:
+Create ```.env``` file under ```chatbot-server``` folder and add API keys and MongoDB configuration as below:
 
 ```env
 GROQ_API_KEY="<API_KEY>"
 TAVILY_API_KEY="<API_KEY>"
+CO_API_KEY="<API_KEY>"
+MONGO_USER_NAME="<USERNAME>"
+MONGO_PASSWORD="<PASSWORD>"
+MONGO_CLUSTER="picksmart-cluster"
+MONGO_DATABASE="picksmart"
 ```
 - To get Groq api key: https://console.groq.com/keys
 - To get Tavily api key: https://tavily.com/
+- To get Cohere api key: https://dashboard.cohere.com/
+- To set up MongoDB: https://www.mongodb.com/
 
 ### Model Configuration
 
