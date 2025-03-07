@@ -10,13 +10,12 @@ from text.PromptMessage import PromptMessage
 
 logger = logging.getLogger(__name__)
 
-
 class SearchAgent:
 
-    def __init__(self, llm_model, embedding_model, tool, client, checkpointer=None):
+    def __init__(self, llm_model, embedding_model, tools, client, checkpointer=None):
         self.model = llm_model
         self.embedding_model = embedding_model
-        self.tool = tool
+        self.tools = tools
         self.client = client
         graph = StateGraph(SearchAgentState)
         graph.add_node("analyze_query", self.analyze_query_node)
@@ -73,9 +72,10 @@ class SearchAgent:
         for query in state['revised_query']:
 
             query = f"find the specific product title from this product requirement: {query}"
-            response = self.tool.search(query=query, max_results=1)
 
-            for r in response['results']:
+            response = self.tools["hybrid_search"].search(query=query, max_local=3, max_foreign=2, save_foreign=True)
+
+            for r in response:
                 products.append(r['content'])
 
         products = " ".join([product for product in products])
@@ -100,7 +100,7 @@ class SearchAgent:
         query = "find the url source from e-commerce website for purchasing products only based on this product title {}"
 
         search_result = list(
-            map(lambda title: self.tool.search(query=query.format(title), max_results=1, include_images=True),
+            map(lambda title: self.tools["search"].search(query=query.format(title), max_results=1, include_images=True),
                 product_tiles))
 
         product_images = [search["images"][0] or "" for search in search_result]
@@ -110,5 +110,4 @@ class SearchAgent:
         for idx, product in enumerate(analyze_result["products"]):
             product["image"] = product_images[idx]
             product["url"] = product_urls[idx]
-        print(analyze_result)
         return {"result": analyze_result}

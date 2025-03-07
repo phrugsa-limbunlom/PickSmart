@@ -1,19 +1,23 @@
+import json
 import logging
 import os
-import json
 import uuid
+from urllib.parse import quote_plus
 
+import cohere
 import requests.exceptions
 from agent.SearchAgent import SearchAgent
 from dotenv import load_dotenv, find_dotenv
 from groq import Groq
 from langchain_core.prompts import ChatPromptTemplate
+from langgraph.checkpoint.sqlite import SqliteSaver
+from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
-from tavily import TavilyClient
+from tavily import TavilyHybridClient, TavilyClient
 from text.PromptMessage import PromptMessage
 from text.WebURLs import WebURLs
 from util.util import Util
-from langgraph.checkpoint.sqlite import SqliteSaver
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +30,7 @@ class ChatbotService:
         self.llm_model = None
         self.embedding_model = None
         self.retrievers = None
-        self.tool = None
+        self.tools = None
         self.thread_id = str(uuid.uuid4())
 
     def query_groq_api(self, client, prompt, model):
@@ -83,11 +87,11 @@ class ChatbotService:
         with SqliteSaver.from_conn_string(":memory:") as memory:
             agent = SearchAgent(llm_model=self.llm_model,
                                 embedding_model=self.embedding_model,
-                                tool=self.tool,
+                                tools=self.tools,
                                 client=self.client,
                                 checkpointer=memory)
 
-            logger.info("Thread ID: ", self.thread_id)
+            logger.info(f"Thread ID: {self.thread_id}")
             thread = {"configurable": {"thread_id": self.thread_id}}
             response = agent.graph.invoke({"user_query": query},thread)
 
@@ -112,7 +116,56 @@ class ChatbotService:
         self.embedding_model = model_list["EMBEDDING"]
 
         # tool
-        self.tool = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+        username = os.getenv("MONGO_USER_NAME")
+        password = os.getenv("MONGO_PASSWORD")
+        cluster = os.getenv("MONGO_CLUSTER")
+        database = os.getenv("MONGO_DATABASE")
+
+        tavily_api_key = os.getenv("TAVILY_API_KEY")
+        cohere_api_key = os.getenv("CO_API_KEY")
+
+        co = cohere.Client(api_key=cohere_api_key)
+
+        def embedding_function(texts, type):
+            return co.embed(
+                model='embed-english-v3.0',
+                texts=texts,
+                input_type=type
+            ).embeddings
+
+        def ranking_function(query, documents, top_n):
+            response = co.rerank(model='rerank-english-v3.0', query=query,
+                                 documents=[doc['content'] for doc in documents], top_n=top_n)
+
+            return [
+                documents[result.index] | {'score': result.relevance_score}
+                for result in response.results
+            ]
+
+        encoded_username = quote_plus(username)
+        encoded_password = quote_plus(password)
+
+        uri = f"mongodb+srv://{encoded_username}:{encoded_password}@{cluster}.0kooc.mongodb.net/?retryWrites=true&w=majority&appName={cluster}"
+
+        db = MongoClient(uri)[database]
+
+        tavily_search = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+        tavily_hybrid_search = TavilyHybridClient(
+            api_key=tavily_api_key,
+            db_provider="mongodb",
+            collection=db.get_collection("embedded_picksmart"),
+            index="pick_smart_vector_index",
+            embeddings_field="product_title_embedding",
+            content_field="product_title",
+            embedding_function=embedding_function,
+            ranking_function=ranking_function
+        )
+
+        self.tools = {"search": tavily_search,"hybrid_search":tavily_hybrid_search}
+
+        # vector index
+        VectorStoreService().create_vector_index(uri, db)
 
         # vector store
         urls = [WebURLs.Amazon, WebURLs.Ebay]
