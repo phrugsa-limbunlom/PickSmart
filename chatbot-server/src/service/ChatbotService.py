@@ -15,9 +15,7 @@ from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
 from text.PromptMessage import PromptMessage
-from text.WebURLs import WebURLs
 from util.util import Util
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,21 +66,6 @@ class ChatbotService:
         relevance_response = self.query_groq_api(client=self.client, prompt=relevance_prompt, model=self.llm_model)
 
         return relevance_response == "relevant"
-
-    def generate_answer(self, query):
-        """Generate an answer using RAG and the Groq API."""
-        if not self.is_query_relevant(query):
-            return json.dumps({"default" : PromptMessage.Default_Message})
-
-        # retrieve from Amazon store
-        results = self.retrievers["amazon"].invoke(query)
-
-        context = " ".join([doc.page_content for doc in results])
-        prompt = self.template.invoke({"context": context, "query": query}).to_string()
-
-        answer = self.query_groq_api(client=self.client, prompt=prompt, model=self.llm_model)
-
-        return answer
 
     def generate_answer_with_agent(self, query):
         """Generate an answer using agent."""
@@ -170,8 +153,4 @@ class ChatbotService:
         self.tools = {"search": tavily_search,"hybrid_search":tavily_hybrid_search}
 
         # vector index
-        VectorStoreService().create_vector_index(uri, db)
-
-        # vector store
-        urls = [WebURLs.Amazon, WebURLs.Ebay]
-        self.retrievers = VectorStoreService(embedding_model=self.embedding_model).load_vector_store(urls=urls)
+        VectorStoreService(mongo_uri=uri, mongo_db=db).create_vector_index()
