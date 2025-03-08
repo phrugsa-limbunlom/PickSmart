@@ -6,7 +6,7 @@ from data.SearchAgentState import SearchAgentState
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
-from text.PromptMessage import PromptMessage
+from constants.PromptMessage import PromptMessage
 
 logging.basicConfig(
     level=logging.INFO,
