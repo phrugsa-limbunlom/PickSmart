@@ -2,6 +2,7 @@ from typing import Any, Dict
 import logging
 import uuid
 from datetime import datetime
+from data.ChatbotResponse import ChatbotResponse
 
 logging.basicConfig(
     level=logging.INFO,
@@ -91,5 +92,5 @@ class ChatbotProcessor:
             logger.error(f"UID mismatch: expected {uid}, got {msg.value['uid']}")
             raise ValueError("UID mismatch in Kafka message")
 
-        return {"value": msg.value['response'],
-                "uid": msg.value['uid']}
+        return ChatbotResponse(value=msg.value['response'],
+                               uid=msg.value['uid']).__dict__
