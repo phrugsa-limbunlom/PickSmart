@@ -2,6 +2,7 @@ import logging
 import time
 
 from pymongo import MongoClient
+from pymongo.database import Database
 from pymongo.operations import SearchIndexModel
 
 logging.basicConfig(
@@ -13,11 +14,28 @@ logger = logging.getLogger(__name__)
 
 class VectorStoreService:
 
-    def __init__(self, mongo_uri, mongo_db):
+    def __init__(self, mongo_uri: str, mongo_db: Database) -> None:
+        """
+        Initialize the VectorStoreService.
+
+        Args:
+            mongo_uri: MongoDB connection URI string
+            mongo_db: MongoDB database instance to work with
+        """
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
 
-    def create_vector_index(self):
+    def create_vector_index(self) -> MongoClient:
+        """
+        Create a vector search index in the MongoDB collection if it doesn't exist.
+
+        Creates a vector search index named 'pick_smart_vector_index' in the
+        'embedded_picksmart' collection, configured for cosine similarity on
+        product_title_embedding vectors with 1024 dimensions.
+
+        Returns:
+            MongoClient: The MongoDB client instance (closed after operation)
+        """
 
         client = MongoClient(self.mongo_uri)
 

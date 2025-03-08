@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Any, Dict
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from fastapi import FastAPI, Request, HTTPException
@@ -29,9 +30,23 @@ RESPONSE_TOPIC = 'chatbot_responses'
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    producer = None
-    consumer = None
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """
+    An asynchronous context manager that initializes and cleans up the
+    Kafka producer, Kafka consumer, and ChatbotService for the FastAPI application.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+
+    Yields:
+        None: Control is yielded to allow the application to run within this context.
+
+    Raises:
+        Exception: Propagates any exceptions occurred during initialization or cleanup.
+    """
+
+    producer: AIOKafkaProducer | None = None
+    consumer: AIOKafkaConsumer | None = None
 
     try:
         logger.info("Initializing Chatbot Service...")
@@ -101,12 +116,28 @@ app.add_middleware(
 
 
 @app.post("/api/chat")
-async def process_chat_message(chat_message: ChatMessage, request: Request):
+async def process_chat_message(chat_message: ChatMessage, request: Request) -> Dict[str, Any]:
+    """
+    Endpoint to process incoming chat messages. Sends the message to a Kafka topic,
+    awaits the response, and returns the chatbot's answer.
+
+    Args:
+        chat_message (ChatMessage): The chat message sent by the client.
+        request (Request): The HTTP request object containing app state
+                           (producer, consumer, service).
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the chatbot's response.
+
+    Raises:
+        HTTPException: If the Kafka producer or consumer is not initialized,
+                       or if there's an error during message processing.
+    """
     logger.info(f"Message: {chat_message.message}")
 
-    producer = request.app.state.producer
-    consumer = request.app.state.consumer
-    service = request.app.state.service
+    producer: AIOKafkaProducer = request.app.state.producer
+    consumer: AIOKafkaConsumer = request.app.state.consumer
+    service: ChatbotService = request.app.state.service
 
     if not producer or not consumer:
         raise HTTPException(status_code=500, detail="Kafka producer or consumer is not initialized.")
