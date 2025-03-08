@@ -1,12 +1,13 @@
 import json
 import logging
+from typing import Dict, List, Any, Optional
 
 import requests
 from data.SearchAgentState import SearchAgentState
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
-from text.PromptMessage import PromptMessage
+from constants.PromptMessage import PromptMessage
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,8 +18,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class SearchAgent:
+    """
+    A search agent that processes queries and finds relevant product information.
 
-    def __init__(self, llm_model, embedding_model, tools, client, checkpointer=None):
+    This agent uses a state graph to analyze queries, search online shops,
+    analyze and rank results, and find product sources.
+
+    Attributes:
+        model: The language model identifier
+        embedding_model: The embedding model identifier
+        tools: Dictionary of search tools
+        client: API client for LLM interactions
+        graph: Compiled state graph for processing
+    """
+
+    def __init__(self,
+                 llm_model: str,
+                 embedding_model: str,
+                 tools: Dict[str, Any],
+                 client: Any,
+                 checkpointer: Optional[Any] = None) -> None:
         self.model = llm_model
         self.embedding_model = embedding_model
         self.tools = tools
@@ -35,7 +54,20 @@ class SearchAgent:
         graph.set_finish_point("analyze_and_rank")
         self.graph = graph.compile(checkpointer=checkpointer)
 
-    def call_client(self, prompt: str):
+    def call_client(self, prompt: str) -> str:
+        """
+        Call the LLM client with a prompt and return the response.
+
+        Args:
+            prompt: The prompt text to send to the LLM
+
+        Returns:
+            The text response from the LLM
+
+        Raises:
+            ValueError: If prompt is not a string
+            requests.exceptions.HTTPError: If API request fails
+        """
         try:
             if not isinstance(prompt, str):
                 raise ValueError(f"Prompt must be a string, but got {type(prompt)}")
@@ -54,8 +86,16 @@ class SearchAgent:
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}")
 
-    def analyze_query_node(self, state: SearchAgentState):
+    def analyze_query_node(self, state: SearchAgentState) -> Dict[str, List[str]]:
+        """
+        Analyze the user query and break it down into specific search queries.
 
+        Args:
+            state: Current state containing the user query
+
+        Returns:
+            Dictionary containing list of revised queries
+        """
         prompt = ChatPromptTemplate.from_messages(
             [
                 SystemMessage(content=PromptMessage.ANALYZE_QUERY_PROMPT),
@@ -71,8 +111,16 @@ class SearchAgent:
 
         return {"revised_query": queries}
 
-    def search_online_node(self, state: SearchAgentState):
+    def search_online_node(self, state: SearchAgentState) -> Dict[str, str]:
+        """
+        Search for products using the revised queries.
 
+        Args:
+            state: Current state containing revised queries
+
+        Returns:
+            Dictionary containing concatenated product information
+        """
         products = []
 
         for query in state['revised_query']:
@@ -88,7 +136,16 @@ class SearchAgent:
 
         return {"relevant_products": products}
 
-    def analyze_rank_node(self, state: SearchAgentState):
+    def analyze_rank_node(self, state: SearchAgentState) -> Dict[str, str]:
+        """
+        Analyze and rank the found products based on user requirements.
+
+        Args:
+            state: Current state containing products and user query
+
+        Returns:
+            Dictionary containing analysis results
+        """
         prompt = ChatPromptTemplate.from_messages([
             PromptMessage.ANALYZE_RANK_PROMPT,
             PromptMessage.ANALYZE_RANK_HUMAN_PROMPT
@@ -96,7 +153,16 @@ class SearchAgent:
 
         return {"analyze_result": self.call_client(prompt)}
 
-    def search_source_node(self, state: SearchAgentState):
+    def search_source_node(self, state: SearchAgentState) -> Dict[str, Any]:
+        """
+        Find product sources and additional information.
+
+        Args:
+            state: Current state containing analyzed products
+
+        Returns:
+            Dictionary containing complete product information with URLs and images
+        """
         analyze_result = state["analyze_result"]
 
         analyze_result = json.loads(analyze_result)

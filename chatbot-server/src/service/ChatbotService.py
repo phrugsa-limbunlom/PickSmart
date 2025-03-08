@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import uuid
+from typing import Optional, Any
 from urllib.parse import quote_plus
 
 import cohere
@@ -14,8 +15,8 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
-from text.PromptMessage import PromptMessage
-from util.util import Util
+from constants.PromptMessage import PromptMessage
+from utils.file_utils import FileUtils
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,18 +27,66 @@ logger = logging.getLogger(__name__)
 
 
 class ChatbotService:
+    """
+    A service class that handles chatbot functionality including LLM interactions,
+    relevance checking, and generating answers using agents.
 
-    def __init__(self):
-        self.template = None
-        self.client = None
-        self.llm_model = None
-        self.embedding_model = None
-        self.retrievers = None
-        self.tools = None
+    This service integrates with Groq API for LLM capabilities and supports
+    vector search through MongoDB and Tavily for retrieving relevant information.
+
+    Attributes:
+        template: ChatPromptTemplate for structuring conversations
+        client: API client for LLM interactions (typically Groq)
+        llm_model: The language model identifier to use
+        embedding_model: The embedding model identifier to use
+        retrievers: Retriever components for information lookup
+        tools: Dictionary of search tools available to the agent
+        thread_id: Unique identifier for conversation thread
+    """
+
+    def __init__(self, template: Optional[str] = None,
+                 client: Optional[str] = None,
+                 llm_model: Optional[str] = None,
+                 embedding_model: Optional[str] = None,
+                 retrievers: Optional[str] = None,
+                 tools: Optional[str] = None):
+
+        """
+        Initialize a new ChatbotService instance.
+
+        Args:
+            template: Optional prompt template for structuring conversations
+            client: Optional API client for LLM interactions
+            llm_model: Optional language model identifier
+            embedding_model: Optional embedding model identifier
+            retrievers: Optional retriever components
+            tools: Optional dictionary of search tools
+        """
+
+        self.template = template
+        self.client = client
+        self.llm_model = llm_model
+        self.embedding_model = embedding_model
+        self.retrievers = retrievers
+        self.tools = tools
         self.thread_id = str(uuid.uuid4())
 
-    def query_groq_api(self, client, prompt, model):
-        """Query the Groq API directly and return the response."""
+    def query_groq_api(self, client: Any, prompt: str, model: str) -> str:
+        """
+        Query the Groq API directly and return the text response.
+
+        Args:
+            client: The Groq API client
+            prompt: The prompt text to send to the API
+            model: The model identifier to use for generation
+
+        Returns:
+            The text response from the API
+
+        Raises:
+            ValueError: If prompt is not a string
+            Various exceptions from the API client
+        """
         try:
             if not isinstance(prompt, str):
                 raise ValueError(f"Prompt must be a string, but got {type(prompt)}")
@@ -58,8 +107,18 @@ class ChatbotService:
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}")
 
-    def is_query_relevant(self, query):
-        """Check if the query is relevant to the prompt template using the model."""
+    def is_query_relevant(self, query: str) -> bool:
+        """
+        Check if a user query is relevant to the configured prompt template.
+
+        Uses the LLM to evaluate relevance by asking it to classify the query.
+
+        Args:
+            query: The user query text to evaluate
+
+        Returns:
+            Boolean indicating whether the query is relevant
+        """
         relevance_prompt = (
             f"This is prompt template : \"{self.template}\". Evaluate whether the following query is relevant to the prompt template: \"{query}\". Respond only one word 'relevant' or 'irrelevant'.")
 
@@ -67,8 +126,19 @@ class ChatbotService:
 
         return relevance_response == "relevant"
 
-    def generate_answer_with_agent(self, query):
-        """Generate an answer using agent."""
+    def generate_answer_with_agent(self, query: str) -> str:
+        """
+        Generate an answer to a query using the search agent.
+
+        First checks if the query is relevant, then uses the agent to generate a response.
+        If not relevant, returns a default message.
+
+        Args:
+            query: The user query to process
+
+        Returns:
+            String containing the response
+        """
         if not self.is_query_relevant(query):
             return json.dumps({"default" : PromptMessage.Default_Message})
 
@@ -81,11 +151,26 @@ class ChatbotService:
 
             logger.info(f"Thread ID: {self.thread_id}")
             thread = {"configurable": {"thread_id": self.thread_id}}
-            response = agent.graph.invoke({"user_query": query},thread)
+            response = agent.graph.invoke({"user_query": query}, thread)
 
             return json.dumps(response['result'])
 
-    def initialize_service(self):
+    def initialize_service(self) -> None:
+        """
+        Initialize the chatbot service with necessary configurations and connections.
+
+        Sets up:
+        - Environment variables
+        - Prompt template
+        - API clients
+        - Model configurations
+        - MongoDB connection
+        - Search tools
+        - Vector index
+
+        This method should be called after instantiating the service and before using it.
+        """
+
         logger.info("Initialize the service")
 
         load_dotenv(find_dotenv())
@@ -98,7 +183,7 @@ class ChatbotService:
 
         # model
         file_path = '../model.yaml'
-        model_list = Util.load_yaml(file_path)
+        model_list = FileUtils.load_yaml(file_path)
 
         self.llm_model = model_list["LLM"]
         self.embedding_model = model_list["EMBEDDING"]
@@ -150,7 +235,7 @@ class ChatbotService:
             ranking_function=ranking_function
         )
 
-        self.tools = {"search": tavily_search,"hybrid_search":tavily_hybrid_search}
+        self.tools = {"search": tavily_search, "hybrid_search": tavily_hybrid_search}
 
         # vector index
         VectorStoreService(mongo_uri=uri, mongo_db=db).create_vector_index()
