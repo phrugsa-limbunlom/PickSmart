@@ -14,7 +14,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
-from text.PromptMessage import PromptMessage
+from constants.PromptMessage import PromptMessage
 from utils.file_utils import FileUtils
 
 logging.basicConfig(
