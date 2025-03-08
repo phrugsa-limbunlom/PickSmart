@@ -15,7 +15,7 @@ from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
 from text.PromptMessage import PromptMessage
-from util.util import Util
+from utils.file_utils import FileUtils
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,7 +98,7 @@ class ChatbotService:
 
         # model
         file_path = '../model.yaml'
-        model_list = Util.load_yaml(file_path)
+        model_list = FileUtils.load_yaml(file_path)
 
         self.llm_model = model_list["LLM"]
         self.embedding_model = model_list["EMBEDDING"]
