@@ -16,20 +16,22 @@ AI-powered shopping assistant platform for real-time product search with context
 PickSmart is a distributed and AI-powered product discovery platform that leverages the large language model and distributed system to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
 
 
-## 🚀 Usage
-- Ask a question about a product.
-- Search multiple marketplaces and rank the results.
-- Receive personalized recommendations.
-
+## 🚀 Features
+|   Name  | Description |
+|-------|-------------|
+| **Ask a question about a product** | Submit a query to get detailed information, including specifications, pricing, and availability. |
+| **Search multiple marketplaces and rank the results**| The system aggregates product listings from various online marketplaces, compares and ranks them based on relevance, price, and customer reviews. |
+| **Receive personalized recommendations** |  Get AI-driven suggestions tailored to users' preferences, helping users make informed decisions. |
 
 ## ⚡Core Capabilities
-
-- **Natural Language Query Processing**: Advanced query decomposition and semantic analysis
-- **Vector Database Integration**: Efficient data ingestion and storage for embedding-based semantic retrieval.
-- **Distributed Real-time Search**: Multi-marketplace product discovery with parallel processing
-- **Intelligent Product Ranking**: AI-powered relevance scoring and personalization
-- **Context-Aware Recommendations**: Detailed answers with product suggestions
-- **Scalable Data Processing**: Event-driven architecture for high-throughput data handling
+|  Function | Description |
+|-----------|-------------|
+|**Natural Language Query Processing** | Advanced query decomposition and semantic analysis
+| **Vector Database Integration** | Efficient data ingestion and storage for embedding-based semantic retrieval.
+| **Distributed Real-time Search** | Multi-marketplace product discovery with parallel processing
+| **Intelligent Product Ranking** | AI-powered relevance scoring and personalization
+| **Context-Aware Recommendations** | Detailed answers with product suggestions
+| **Scalable Data Processing** | Event-driven architecture for high-throughput data handling
 
 
 ## 🎥 Demo
@@ -59,7 +61,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **API Framework**: FastAPI with asynchronous request handling and high-performance routing
 - **Message Broker**: Apache Kafka for event streaming and distributed processing
 - **Vector Store**: MongoDB for efficient similarity search and embedding storage
-- **Search Engine**: Tavily API integration for enhanced web search capabilities
+- **Search Engine**: Tavily API integration for real-time and accurate web search capabilities
 
 ### AI Components
 - **LLM Integration**: Groq API for high-performance inference
@@ -70,7 +72,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 
 ### Agent Architecture
 
-The system implements a search and analyze agent with a multi-step workflow using LangGraph for orchestration:
+The system implements a search and analyst agent with a multi-step workflow using LangGraph for orchestration:
 
 ```python
 graph = StateGraph(SearchAgentState)
@@ -86,11 +88,54 @@ graph.set_finish_point("analyze_and_rank")
 self.graph = graph.compile(checkpointer=checkpointer)
 ```
 
-Agent responsibilities include:
-1. **Query Analysis Agent**: Semantic decomposition and intent classification
-2. **Search Orchestration Agent**: Leveraging vector store search and distributed online search
-3. **Ranking Agent**: Multi-criteria product evaluation and scoring
-4. **E-commerce Discovery Agent**: Discovery product sources across multiple e-commerce platforms to provide direct purchase links
+The search and analyst agent progresses through the following sequential states:
+
+| State | Name | Description |
+|:-----:|-------|-------------|
+|   1   | 🔍 **Query Analysis State** | Analyzes and decomposes the user query before identifying search intent and extracts key product attributes, serving as the entry point for all search requests |
+|   2   | 🛒 **Online Shop Search State** | Performs search across multiple online websites, retrieves initial product information from available sources, and gathers raw product data for further analysis |
+|   3   | ⭐ **Analysis and Ranking State** | Evaluates and ranks products using multiple criteria, prioritizing results based on relevance and quality to deliver the most appropriate options to users |
+|   4   | 🔗 **Product Source Search State** | Extends search to discover additional product sources across e-commerce platforms, provides a direct purchasing link, and validates product availability |
+
+The workflow follows a linear progression through these states, from which each state is built upon the results of the previous states.
+
+## 📂 Folder Structure
+
+This project contains a chatbot application with a backend server, Kafka integration, and a frontend interface.
+
+```bash
+chatbot-app  
+├── public              # Static assets for the frontend  
+├── src                 # Source code for the frontend  
+├── .gitignore          # Git ignore file for frontend  
+├── Dockerfile          # Dockerfile for frontend containerization  
+├── package-lock.json   # Dependency lock file  
+├── package.json        # Node.js project configuration  
+
+chatbot-server  
+├── src                 # Source code for the backend  
+│   ├── agent           # AI agent-related logic  
+│   ├── constants       # Configuration and constant values  
+│   ├── data            # Data handling and storage logic  
+│   ├── processor       # Data processing and transformation logic  
+│   ├── service         # Business logic and service layer  
+│   ├── utils           # Utility functions and helpers  
+│   ├── chatbot.py      # Main chatbot logic  
+│   ├── main.py         # Entry point for the backend server  
+├── .gitignore          # Git ignore file for backend  
+├── Dockerfile          # Dockerfile for backend containerization  
+├── __init__.py         # Marks the package directory  
+├── model.yaml          # AI model configuration file  
+├── requirements.txt    # Python dependencies  
+
+kafka  
+├── config              # Kafka configuration files  
+├── Dockerfile          # Dockerfile for Kafka setup  
+├── .gitignore          # Git ignore file for Kafka  
+
+LICENSE                 # Project license file  
+
+```
    
 ## ⚙️ Configuration
 
