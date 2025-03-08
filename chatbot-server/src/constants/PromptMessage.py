@@ -22,7 +22,7 @@ class PromptMessage:
 
     Let me know if you’d like more details about any of these options or need further assistance.
     """
-    Default_Message = """
+    Default_Message = """ 
     Hello! I'm an AI assistant specialized in helping users find the best products online. 
     I can assist you in finding the perfect product that fits your needs and preferences. 
     Please feel free to ask me about a specific product or category you're interested in, 
