@@ -26,7 +26,6 @@ class SearchAgent:
 
     Attributes:
         model: The language model identifier
-        embedding_model: The embedding model identifier
         tools: Dictionary of search tools
         client: API client for LLM interactions
         graph: Compiled state graph for processing
@@ -34,12 +33,10 @@ class SearchAgent:
 
     def __init__(self,
                  llm_model: str,
-                 embedding_model: str,
                  tools: Dict[str, Any],
                  client: Any,
                  checkpointer: Optional[Any] = None) -> None:
         self.model = llm_model
-        self.embedding_model = embedding_model
         self.tools = tools
         self.client = client
         graph = StateGraph(SearchAgentState)
