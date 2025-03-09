@@ -72,7 +72,6 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **LLM Integration**: Groq API for high-performance inference
 - **Agent Framework**: LangChain for composable AI components
 - **Workflow Orchestration**: LangGraph for agent coordination and planning
-- **Embedding Models**: Support for multiple embedding architectures
 - **RAG System**: MongoDB for vector index implementation and semantic retrieval
 
 ### Agent Architecture
@@ -163,10 +162,9 @@ MONGO_DATABASE="picksmart"
 
 ### Model Configuration
 
-Configure the LLM model and Embedding models in ```model.yaml``` file:
+Configure the LLM model in ```model.yaml``` file:
 ```yaml
 LLM: <LLM_MODEL>
-EMBEDDING: <EMBEDDING_MODEL>
 ```
 
 ## 🚢 Deployment

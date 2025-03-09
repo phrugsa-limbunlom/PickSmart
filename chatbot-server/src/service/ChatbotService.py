@@ -38,7 +38,6 @@ class ChatbotService:
         template: ChatPromptTemplate for structuring conversations
         client: API client for LLM interactions (typically Groq)
         llm_model: The language model identifier to use
-        embedding_model: The embedding model identifier to use
         retrievers: Retriever components for information lookup
         tools: Dictionary of search tools available to the agent
         thread_id: Unique identifier for conversation thread
@@ -47,7 +46,6 @@ class ChatbotService:
     def __init__(self, template: Optional[str] = None,
                  client: Optional[str] = None,
                  llm_model: Optional[str] = None,
-                 embedding_model: Optional[str] = None,
                  retrievers: Optional[str] = None,
                  tools: Optional[str] = None):
 
@@ -58,7 +56,6 @@ class ChatbotService:
             template: Optional prompt template for structuring conversations
             client: Optional API client for LLM interactions
             llm_model: Optional language model identifier
-            embedding_model: Optional embedding model identifier
             retrievers: Optional retriever components
             tools: Optional dictionary of search tools
         """
@@ -66,7 +63,6 @@ class ChatbotService:
         self.template = template
         self.client = client
         self.llm_model = llm_model
-        self.embedding_model = embedding_model
         self.retrievers = retrievers
         self.tools = tools
         self.thread_id = str(uuid.uuid4())
@@ -144,7 +140,6 @@ class ChatbotService:
 
         with SqliteSaver.from_conn_string(":memory:") as memory:
             agent = SearchAgent(llm_model=self.llm_model,
-                                embedding_model=self.embedding_model,
                                 tools=self.tools,
                                 client=self.client,
                                 checkpointer=memory)
@@ -186,7 +181,6 @@ class ChatbotService:
         model_list = FileUtils.load_yaml(file_path)
 
         self.llm_model = model_list["LLM"]
-        self.embedding_model = model_list["EMBEDDING"]
 
         # tool
         username = os.getenv("MONGO_USER_NAME")
