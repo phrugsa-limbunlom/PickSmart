@@ -50,7 +50,12 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **API Client**: Groq API
 
 
-## 📐Technical Architecture
+## 📐System Architecture
+
+<div align="center">
+   <img src="https://github.com/user-attachments/assets/00e75083-c970-465e-a59b-e27e592472eb">
+</div>
+
 
 ### Frontend Layer
 - **Framework**: React.js with TypeScript
