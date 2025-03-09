@@ -53,7 +53,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 ## 📐System Architecture
 
 <div align="center">
-   <img src="https://github.com/user-attachments/assets/f6c2d2f2-b5bd-462b-9998-e17dae221f3b">
+    <img src="https://github.com/user-attachments/assets/f6c2d2f2-b5bd-462b-9998-e17dae221f3b" width="600" height="450">
 </div>
 
 
