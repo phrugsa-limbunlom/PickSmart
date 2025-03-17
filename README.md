@@ -53,9 +53,8 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 ## 📐System Architecture
 
 <div align="center">
-   <img src="https://github.com/user-attachments/assets/8835285b-72cb-445a-b351-3d18cce026c9">
+   <img src="https://github.com/user-attachments/assets/bb4f4639-2a4a-4dc2-a785-7b3803125af4">
 </div>
-
 
 ### Frontend Layer
 - **Framework**: React.js with TypeScript
