@@ -53,7 +53,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 ## 📐System Architecture
 
 <div align="center">
-   <img src="https://github.com/user-attachments/assets/bb4f4639-2a4a-4dc2-a785-7b3803125af4">
+   <img src="https://github.com/user-attachments/assets/1bf2a44d-06b2-4599-8b1e-9403e0684424">
 </div>
 
 ### Frontend Layer
