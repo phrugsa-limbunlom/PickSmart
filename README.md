@@ -73,7 +73,7 @@ https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
 - **Workflow Orchestration**: LangGraph for agent coordination and planning
 - **RAG System**: MongoDB for vector index implementation and semantic retrieval
 
-### Agent Architecture
+### Agent Workflow
 
 The system implements a search and analyst agent with a multi-step workflow using LangGraph for orchestration:
 
