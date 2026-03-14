@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { FaRobot } from "react-icons/fa";
 import { Send } from "lucide-react";
 import "./App.css";
@@ -9,13 +8,14 @@ function App() {
   const [hideHeader, setHideHeader] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progressMessage, setProgressMessage] = useState("");
   const [streamingIndex, setStreamingIndex] = useState(-1);
   const [streamingText, setStreamingText] = useState("");
   const [messageQueue, setMessageQueue] = useState([]);
   const messagesEndRef = useRef(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
-  const endpoint = "/api/chat";
+  const endpoint = "/api/chat/stream";
   const url = `${backendUrl}${endpoint}`;
 
   const scrollToBottom = () => {
@@ -69,72 +69,98 @@ function App() {
     setInput("");
     setLoading(true);
     setHideHeader(true);
+    setProgressMessage("");
 
     try {
-      const res = await axios.post(url, {
-        user: "user",
-        message: input,
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: "user", message: input }),
       });
 
-      const data = res.data;
-      const response = JSON.parse(data.value);
-      let newMessages = [];
-      let queuedMessages = [];
-
-      if (response.default) {
-        const msg = { text: response.default, sender: "bot", streaming: true };
-        newMessages.push(msg);
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
       }
 
-      if (response.initial) {
-        const msg = {
-          text: response.initial.message.replace("-", ""),
-          sender: "bot",
-          streaming: true
-        };
-        newMessages.push(msg);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const raw = line.slice(6).trim();
+
+          if (raw === "[DONE]") break;
+
+          if (raw.startsWith("[ERROR]")) {
+            setMessages(prev => [...prev, { text: raw.slice(8).trim(), sender: "error" }]);
+            break;
+          }
+
+          const event = JSON.parse(raw);
+
+          if (event.type === "progress") {
+            setProgressMessage(event.message);
+          }
+
+          if (event.type === "result") {
+            setProgressMessage("");
+            const response = event.data;
+            let newMessages = [];
+
+            if (response.default) {
+              newMessages.push({ text: response.default, sender: "bot", streaming: true });
+            }
+
+            if (response.initial) {
+              newMessages.push({
+                text: response.initial.message.replace("-", ""),
+                sender: "bot",
+                streaming: true,
+              });
+            }
+
+            if (response.products && response.products.length > 0) {
+              newMessages.push({ sender: "products", items: response.products });
+            }
+
+            if (response.final) {
+              newMessages.push({
+                text: response.final.message.replace("-", ""),
+                sender: "bot",
+                streaming: true,
+              });
+            }
+
+            setMessages(prev => {
+              const updatedMessages = [...prev, ...newMessages];
+              const queuedMessages = newMessages
+                .map((msg, idx) => ({
+                  text: msg.text,
+                  index: prev.length + idx,
+                  streaming: msg.streaming,
+                }))
+                .filter(msg => msg.streaming && msg.text);
+              setMessageQueue(queuedMessages);
+              return updatedMessages;
+            });
+          }
+        }
       }
-
-      if (response.products && response.products.length > 0) {
-        newMessages.push({
-          sender: "products",
-          items: response.products,
-        });
-      }
-
-      if (response.final) {
-        const msg = {
-          text: response.final.message.replace("-", ""),
-          sender: "bot",
-          streaming: true
-        };
-        newMessages.push(msg);
-      }
-
-      setMessages(prev => {
-        const updatedMessages = [...prev, ...newMessages];
-        // Queue all streaming messages
-        queuedMessages = newMessages
-          .map((msg, idx) => ({
-            text: msg.text,
-            index: prev.length + idx,
-            streaming: msg.streaming
-          }))
-          .filter(msg => msg.streaming);
-
-        setMessageQueue(queuedMessages);
-        return updatedMessages;
-      });
-
     } catch (err) {
       console.error(err);
-      const errorMessage = {
-        text: err.response?.data?.error || "An error occurred.",
-        sender: "error",
-      };
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setMessages(prev => [...prev, { text: "An error occurred.", sender: "error" }]);
     } finally {
       setLoading(false);
+      setProgressMessage("");
     }
   };
 
@@ -174,12 +200,15 @@ function App() {
             )
           )}
           {loading && (
-            <div className="message bot">
+            <div className="message bot progress-message-bubble">
               <div className="typing-indicator">
                 <span></span>
                 <span></span>
                 <span></span>
               </div>
+              {progressMessage && (
+                <span className="progress-text">{progressMessage}</span>
+              )}
             </div>
           )}
           <div ref={messagesEndRef} />
