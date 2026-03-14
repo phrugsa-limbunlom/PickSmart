@@ -8,6 +8,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
 from constants.PromptMessage import PromptMessage
+import asyncio
 
 logging.basicConfig(
     level=logging.INFO,
@@ -108,7 +109,7 @@ class SearchAgent:
 
         return {"revised_query": queries}
 
-    def search_online_node(self, state: SearchAgentState) -> Dict[str, str]:
+    async def search_online_node(self, state: SearchAgentState) -> Dict[str, str]:
         """
         Search for products using the revised queries.
 
@@ -124,7 +125,9 @@ class SearchAgent:
 
             query = f"find the specific product title from this product requirement: {query}"
 
-            response = self.tools["hybrid_search"].search(query=query, max_local=3, max_foreign=2, save_foreign=True)
+            response = await asyncio.to_thread(
+                lambda q=query: self.tools["hybrid_search"].search(query=q, max_local=3, max_foreign=2, save_foreign=True)
+            )
 
             for r in response:
                 products.append(r['content'])
