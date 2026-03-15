@@ -8,12 +8,9 @@ AI-powered shopping assistant platform for real-time product search with context
 </p>
 <br>
 
-![image](https://github.com/user-attachments/assets/3d2d0ca7-cfa9-4fec-8b2c-c802e5134411)
-
-
 ## 📌 Overview
 
-PickSmart is a distributed and AI-powered product discovery platform that leverages the large language model and distributed system to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
+PickSmart is an AI-powered product discovery platform that leverages the large language model and intelligent agents to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
 
 
 ## 🚀 Features
@@ -36,34 +33,30 @@ PickSmart is a distributed and AI-powered product discovery platform that levera
 
 ## 🎥 Demo
 
-
-https://github.com/user-attachments/assets/47f57b9d-7c8b-4d37-8943-06d1eba58961
-
+Coming Soon...
 
 
 ## 🛠️ Tech Stack
-- **Frontend**: React
+- **Frontend**: React, Vite
 - **Backend**: FastAPI
+- **Build Tool**: Vite (migrated from CRA)
+- **Containerization**: Docker
 - **Streaming**: Kafka
 - **RAG System**: LangChain, MongoDB (vector store)
 - **Agents**: LangGraph, Tavily (search)
-- **API Client**: Groq API
-
 
 ## 📐System Architecture
 
-<div align="center">
-   <img src="https://github.com/user-attachments/assets/1bf2a44d-06b2-4599-8b1e-9403e0684424">
-</div>
+Coming Soon...
 
 ### Frontend Layer
 - **Framework**: React.js with TypeScript
 - **State Management**: Redux for predictable state container
 - **API Integration**: Axios for HTTP client
+- **Styling**: Custom CSS with modern SaaS design principles
 
 ### Backend Services
 - **API Framework**: FastAPI with asynchronous request handling and high-performance routing
-- **Message Broker**: Apache Kafka for event streaming and distributed processing
 - **Vector Store**: MongoDB for efficient similarity search and embedding storage
 - **Search Engine**: Tavily API integration for real-time and accurate web search capabilities
 
@@ -104,40 +97,45 @@ The workflow follows a linear progression through these states, from which each 
 
 ## 📂 Folder Structure
 
-This project contains a chatbot application with a backend server, Kafka integration, and a frontend interface.
+This project contains a Vite React frontend and a FastAPI backend.
 
 ```bash
-chatbot-app  
-├── public              # Static assets for the frontend  
-├── src                 # Source code for the frontend  
-├── .gitignore          # Git ignore file for frontend  
-├── Dockerfile          # Dockerfile for frontend containerization  
-├── package-lock.json   # Dependency lock file  
-├── package.json        # Node.js project configuration  
-
-chatbot-server  
-├── src                 # Source code for the backend  
-│   ├── agent           # AI agent-related logic  
-│   ├── constants       # Configuration and constant values  
-│   ├── data            # Data handling and storage logic  
-│   ├── processor       # Data processing and transformation logic  
-│   ├── service         # Business logic and service layer  
-│   ├── utils           # Utility functions and helpers  
-│   ├── chatbot.py      # Main chatbot logic  
-│   ├── main.py         # Entry point for the backend server  
-├── .gitignore          # Git ignore file for backend  
-├── Dockerfile          # Dockerfile for backend containerization  
-├── __init__.py         # Marks the package directory  
-├── model.yaml          # AI model configuration file  
-├── requirements.txt    # Python dependencies  
-
-kafka  
-├── config              # Kafka configuration files  
-├── Dockerfile          # Dockerfile for Kafka setup  
-├── .gitignore          # Git ignore file for Kafka  
-
-LICENSE                 # Project license file  
-
+PickSmart
+├── docker-compose.yaml             # Multi-service local deployment
+├── LICENSE                         # Project license
+├── README.md                       # Project documentation
+├── chatbot-app                     # Frontend application (React + Vite)
+│   ├── .env                        # Frontend environment variables
+│   ├── Dockerfile                  # Frontend container definition
+│   ├── index.html                  # Vite HTML entry
+│   ├── package.json                # Frontend dependencies and scripts
+│   ├── package-lock.json           # Frontend dependency lockfile
+│   ├── vite.config.js              # Vite configuration
+│   ├── public                      # Public static assets
+│   ├── src                         # Frontend source code
+│   │   ├── App.css                 # Main UI styles
+│   │   ├── App.jsx                 # Main app component
+│   │   ├── App.test.js             # Frontend test file
+│   │   ├── index.css               # Global styles
+│   │   ├── main.jsx                # React entrypoint
+│   │   ├── reportWebVitals.js      # Performance metrics helper
+│   │   └── setupTests.js           # Test setup
+│   └── build                       # Static build output
+└── chatbot-server                  # Backend application (FastAPI)
+	├── .env                        # Backend environment variables
+	├── Dockerfile                  # Backend container definition
+	├── model.yaml                  # LLM model config
+	├── requirements.txt            # Python dependencies
+	├── __init__.py
+	└── src                         # Backend source code
+		├── __init__.py
+		├── chatbot.py              # Core chatbot logic
+		├── main.py                 # FastAPI entrypoint
+		├── agent                   # Search agent workflow
+		├── constants               # Prompt and constants
+		├── data                    # Data models
+		├── service                 # Service layer
+		└── utils                   # Utility helpers
 ```
    
 ## ⚙️ Configuration
@@ -170,6 +168,9 @@ LLM: <LLM_MODEL>
 
 ### Docker Deployment
 The application supports containerized deployment using Docker and Docker Compose for simplified orchestration.
+
+- **Docker**: Multi-service orchestration with Docker Compose
+- **Environment Variables**: Managed via `.env` files, using `VITE_BACKEND_URL` for frontend-backend communication
 
 1. Clone the repository:
 ```bash
