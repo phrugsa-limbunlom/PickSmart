@@ -1,6 +1,6 @@
 <h1 align="center"> PickSmart 🛒 </h1>
 <div align="center">
-<img alt="Langchain" src="https://img.shields.io/badge/-Langchain-013243?style=flat&logo=langchain&logoColor=white"> <img alt="Langgraph" src="https://img.shields.io/badge/-Langgraph-013243?style=flat&logo=Langgraph&logoColor=white"> <img alt="Tavily" src="https://img.shields.io/badge/-Tavily-231F20?style=flat&logo=Tavily&logoColor=white"> <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=flat&logo=mongodb&logoColor=white"><img alt="Tavily" src="https://img.shields.io/badge/-Groq-231F20?style=flat&logo=Groq&logoColor=white"><img alt="FastAPI" src="https://img.shields.io/badge/-Fastapi-009688?style=flat&logo=Fastapi&logoColor=white"> <img alt="Kafka" src="https://img.shields.io/badge/-Kafka-231F20?style=flat&logo=kafka&logoColor=white">
+<img alt="Langchain" src="https://img.shields.io/badge/-Langchain-013243?style=flat&logo=langchain&logoColor=white"> <img alt="Langgraph" src="https://img.shields.io/badge/-Langgraph-013243?style=flat&logo=Langgraph&logoColor=white"> <img alt="Tavily" src="https://img.shields.io/badge/-Tavily-231F20?style=flat&logo=Tavily&logoColor=white"> <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=flat&logo=mongodb&logoColor=white"><img alt="Tavily" src="https://img.shields.io/badge/-Groq-231F20?style=flat&logo=Groq&logoColor=white"><img alt="FastAPI" src="https://img.shields.io/badge/-Fastapi-009688?style=flat&logo=Fastapi&logoColor=white">
 </div>
 <br>
 <p align="center">
@@ -8,7 +8,13 @@ AI-powered shopping assistant platform for real-time product search with context
 </p>
 <br>
 
-## 📌 Overview
+## 🎥 Overview
+
+<video controls width="100%" poster="./assets/picksmart.png" preload="metadata">
+  <source src="./assets/picksmart-demo.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
 
 PickSmart is an AI-powered product discovery platform that leverages the large language model and intelligent agents to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
 
@@ -29,12 +35,6 @@ PickSmart is an AI-powered product discovery platform that leverages the large l
 | **Intelligent Product Ranking** | AI-powered relevance scoring and personalization
 | **Context-Aware Recommendations** | Detailed answers with product suggestions
 | **Scalable Data Processing** | Event-driven architecture for high-throughput data handling
-
-
-## 🎥 Demo
-
-Coming Soon...
-
 
 ## 🛠️ Tech Stack
 - **Frontend**: React, Vite
