@@ -56,7 +56,7 @@ app = FastAPI(lifespan=lifespan)
 # enable cors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://picksmart-app.onrender.com/"],
+    allow_origins=["http://localhost:3000", "https://picksmart-app.onrender.com"],
     allow_credentials=True,
     allow_methods=["POST", "OPTIONS"],
     allow_headers=["*"],
