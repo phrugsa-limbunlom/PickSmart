@@ -10,6 +10,8 @@ AI-powered shopping assistant platform for real-time product search with context
 
 ## 🎥 Overview
 
+![Demo](./assets/picksmart.png)
+
 ![PickSmart Demo](./assets/picksmart-demo.gif)
 
 
