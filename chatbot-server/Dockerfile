@@ -7,6 +7,7 @@ RUN pip install --upgrade pip
 # Install runtime dependencies, CA certificates, and Rust toolchain for builds
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl openssl && \
     update-ca-certificates && \
+    sed -i 's/@SECLEVEL=2/@SECLEVEL=1/g' /etc/ssl/openssl.cnf || true && \
     curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     /bin/bash -c "source $HOME/.cargo/env" && \
     echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc && \
