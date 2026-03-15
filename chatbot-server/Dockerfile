@@ -4,10 +4,13 @@ WORKDIR /chatbot-server
 
 RUN pip install --upgrade pip
 
-# Install Rust and Cargo
-RUN apt-get update && apt-get install -y curl && curl https://sh.rustup.rs -sSf | sh -s -- -y && \
+# Install runtime dependencies, CA certificates, and Rust toolchain for builds
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl openssl && \
+    update-ca-certificates && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     /bin/bash -c "source $HOME/.cargo/env" && \
-    echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+    echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt and install dependencies
 COPY requirements.txt /chatbot-server
