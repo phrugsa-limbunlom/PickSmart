@@ -4,6 +4,7 @@ import time
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.operations import SearchIndexModel
+from pymongo.server_api import ServerApi
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,18 +38,15 @@ class VectorStoreService:
             MongoClient: The MongoDB client instance (closed after operation)
         """
 
-        client = MongoClient(self.mongo_uri)
+        client = MongoClient(self.mongo_uri, server_api=ServerApi('1'))
 
         collection_name = "embedded_picksmart"
         collection = self.mongo_db.get_collection(collection_name)
-
-        collection_list = self.mongo_db.list_collection_names()
-
-        for collection in collection_list:
-            if collection == collection_name:
-                logger.info(f"Collection '{collection}' already exists. Skip creating vector index.")
-                client.close()
-            return client
+        
+        # Check if the collection exists
+        if collection_name not in self.mongo_db.list_collection_names():
+            logger.info(f"Collection '{collection_name}' does not exist. Creating collection.")
+            self.mongo_db.create_collection(collection_name)
 
         search_index_model = SearchIndexModel(
             definition={
@@ -65,6 +63,14 @@ class VectorStoreService:
             name="pick_smart_vector_index",
             type="vectorSearch",
         )
+
+        # Check if the index already exists
+        existing_indexes = list(collection.list_search_indexes())
+        if any(idx.get("name") == "pick_smart_vector_index" for idx in existing_indexes):
+            logger.info("Index 'pick_smart_vector_index' already exists. Skipping creation.")
+            client.close()
+            return client
+        
         result = collection.create_search_index(model=search_index_model)
         logger.info("New search index named " + result + " is building.")
 

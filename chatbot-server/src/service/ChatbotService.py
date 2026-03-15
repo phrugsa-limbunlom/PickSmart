@@ -11,12 +11,13 @@ from agent.SearchAgent import SearchAgent
 from dotenv import load_dotenv, find_dotenv
 from groq import Groq
 from langchain_core.prompts import ChatPromptTemplate
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pymongo import MongoClient
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
 from constants.PromptMessage import PromptMessage
 from utils.file_utils import FileUtils
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -122,23 +123,29 @@ class ChatbotService:
 
         return relevance_response == "relevant"
 
-    def generate_answer_with_agent(self, query: str) -> str:
+    async def stream_answer(self, query: str):
         """
-        Generate an answer to a query using the search agent.
+        Stream progress events and the final result for a query.
 
-        First checks if the query is relevant, then uses the agent to generate a response.
-        If not relevant, returns a default message.
+        Yields JSON-encoded SSE events of two types:
+        - {"type": "progress", "message": "..."}  — sent as each graph node starts
+        - {"type": "result", "data": {...}}         — sent once the final result is ready
 
         Args:
             query: The user query to process
-
-        Returns:
-            String containing the response
         """
         if not self.is_query_relevant(query):
-            return json.dumps({"default" : PromptMessage.Default_Message})
+            yield json.dumps({"type": "result", "data": {"default": PromptMessage.Default_Message}})
+            return
 
-        with SqliteSaver.from_conn_string(":memory:") as memory:
+        NODE_MESSAGES = {
+            "analyze_query": "Understanding your request...",
+            "search_online_shop": "Searching for products...",
+            "analyze_and_rank": "Ranking and analyzing results...",
+            "search_product_source": "Finding product sources...",
+        }
+
+        async with AsyncSqliteSaver.from_conn_string(":memory:") as memory:
             agent = SearchAgent(llm_model=self.llm_model,
                                 tools=self.tools,
                                 client=self.client,
@@ -146,9 +153,17 @@ class ChatbotService:
 
             logger.info(f"Thread ID: {self.thread_id}")
             thread = {"configurable": {"thread_id": self.thread_id}}
-            response = agent.graph.invoke({"user_query": query}, thread)
 
-            return json.dumps(response['result'])
+            async for chunk in agent.graph.astream({"user_query": query}, thread, stream_mode="updates"):
+                node_name = next(iter(chunk))
+                state_update = chunk[node_name]
+
+                if node_name in NODE_MESSAGES:
+                    yield json.dumps({"type": "progress", "message": NODE_MESSAGES[node_name]})
+
+                if "result" in state_update:
+                    yield json.dumps({"type": "result", "data": state_update["result"]})
+    
 
     def initialize_service(self) -> None:
         """
@@ -212,11 +227,15 @@ class ChatbotService:
         encoded_username = quote_plus(username)
         encoded_password = quote_plus(password)
 
-        uri = f"mongodb+srv://{encoded_username}:{encoded_password}@{cluster}.0kooc.mongodb.net/?retryWrites=true&w=majority&appName={cluster}"
+
+        uri = f"mongodb+srv://{encoded_username}:{encoded_password}@{cluster}.mongodb.net/{database}?appName=picksmart-cluster&retryWrites=true&w=majority"
 
         db = MongoClient(uri)[database]
 
         tavily_search = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+        # vector index
+        VectorStoreService(mongo_uri=uri, mongo_db=db).create_vector_index()
 
         tavily_hybrid_search = TavilyHybridClient(
             api_key=tavily_api_key,
@@ -230,6 +249,3 @@ class ChatbotService:
         )
 
         self.tools = {"search": tavily_search, "hybrid_search": tavily_hybrid_search}
-
-        # vector index
-        VectorStoreService(mongo_uri=uri, mongo_db=db).create_vector_index()
