@@ -10,10 +10,7 @@ AI-powered shopping assistant platform for real-time product search with context
 
 ## 🎥 Overview
 
-<video controls width="100%" poster="./assets/picksmart.png" preload="metadata">
-  <source src="./assets/picksmart-demo.mp4" type="video/mp4" />
-  Your browser does not support the video tag.
-</video>
+![PickSmart Demo](./assets/picksmart-demo.gif)
 
 
 PickSmart is an AI-powered product discovery platform that leverages the large language model and intelligent agents to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
