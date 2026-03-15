@@ -40,7 +40,6 @@ PickSmart is an AI-powered product discovery platform that leverages the large l
 - **Backend**: FastAPI
 - **Build Tool**: Vite (migrated from CRA)
 - **Containerization**: Docker
-- **Streaming**: Kafka
 - **RAG System**: LangChain, MongoDB (vector store)
 - **Agents**: LangGraph, Tavily (search)
 
@@ -207,15 +206,11 @@ pip install -r /chatbot-server/requirements.txt
 cd chatbot-app
 npm install
 ```
-
-4. Initialize Kafka services
-
-5. Launch backend server:
+4. Launch backend server:
 ```bash
 uvicorn main:app --reload
 ```
-
-6. Start frontend application:
+5. Start frontend application:
 ```bash
 npm start
 ```
