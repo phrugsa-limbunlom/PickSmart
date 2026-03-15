@@ -6,6 +6,7 @@ from typing import Optional, Any
 from urllib.parse import quote_plus
 
 import cohere
+import certifi
 import requests.exceptions
 from agent.SearchAgent import SearchAgent
 from dotenv import load_dotenv, find_dotenv
@@ -13,6 +14,7 @@ from groq import Groq
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 from service.VectorStoreService import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
 from constants.PromptMessage import PromptMessage
@@ -67,6 +69,23 @@ class ChatbotService:
         self.retrievers = retrievers
         self.tools = tools
         self.thread_id = str(uuid.uuid4())
+
+    def _create_mongo_client(self, uri: str) -> MongoClient:
+        """
+        Build a TLS-enabled MongoDB client with explicit CA bundle configuration.
+
+        This avoids platform-specific certificate issues in containerized runtimes.
+        """
+        tls_ca_file = os.getenv("MONGO_TLS_CA_FILE", certifi.where())
+        return MongoClient(
+            uri,
+            tls=True,
+            tlsCAFile=tls_ca_file,
+            serverSelectionTimeoutMS=30000,
+            connectTimeoutMS=20000,
+            socketTimeoutMS=20000,
+            retryWrites=True,
+        )
 
     def query_groq_api(self, client: Any, prompt: str, model: str) -> str:
         """
@@ -230,12 +249,22 @@ class ChatbotService:
 
         uri = f"mongodb+srv://{encoded_username}:{encoded_password}@{cluster}.mongodb.net/{database}?appName=picksmart-cluster&retryWrites=true&w=majority"
 
-        db = MongoClient(uri)[database]
+        mongo_client = self._create_mongo_client(uri)
+        try:
+            mongo_client.admin.command("ping")
+        except PyMongoError as e:
+            logger.exception("MongoDB connection failed during startup")
+            raise RuntimeError(
+                "Failed to connect to MongoDB Atlas. Verify database network access, "
+                "credentials, cluster name, and TLS settings."
+            ) from e
+
+        db = mongo_client[database]
 
         tavily_search = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
         # vector index
-        VectorStoreService(mongo_uri=uri, mongo_db=db).create_vector_index()
+        VectorStoreService(mongo_db=db).create_vector_index()
 
         tavily_hybrid_search = TavilyHybridClient(
             api_key=tavily_api_key,

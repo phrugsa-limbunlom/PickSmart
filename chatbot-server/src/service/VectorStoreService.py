@@ -1,10 +1,8 @@
 import logging
 import time
 
-from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.operations import SearchIndexModel
-from pymongo.server_api import ServerApi
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,18 +13,16 @@ logger = logging.getLogger(__name__)
 
 class VectorStoreService:
 
-    def __init__(self, mongo_uri: str, mongo_db: Database) -> None:
+    def __init__(self, mongo_db: Database) -> None:
         """
         Initialize the VectorStoreService.
 
         Args:
-            mongo_uri: MongoDB connection URI string
             mongo_db: MongoDB database instance to work with
         """
-        self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
 
-    def create_vector_index(self) -> MongoClient:
+    def create_vector_index(self) -> None:
         """
         Create a vector search index in the MongoDB collection if it doesn't exist.
 
@@ -35,10 +31,8 @@ class VectorStoreService:
         product_title_embedding vectors with 1024 dimensions.
 
         Returns:
-            MongoClient: The MongoDB client instance (closed after operation)
+            None
         """
-
-        client = MongoClient(self.mongo_uri, server_api=ServerApi('1'))
 
         collection_name = "embedded_picksmart"
         collection = self.mongo_db.get_collection(collection_name)
@@ -68,8 +62,7 @@ class VectorStoreService:
         existing_indexes = list(collection.list_search_indexes())
         if any(idx.get("name") == "pick_smart_vector_index" for idx in existing_indexes):
             logger.info("Index 'pick_smart_vector_index' already exists. Skipping creation.")
-            client.close()
-            return client
+            return
         
         result = collection.create_search_index(model=search_index_model)
         logger.info("New search index named " + result + " is building.")
@@ -87,7 +80,3 @@ class VectorStoreService:
             time.sleep(5)
 
         logger.info(result + " is ready for querying.")
-
-        client.close()
-
-        return client
