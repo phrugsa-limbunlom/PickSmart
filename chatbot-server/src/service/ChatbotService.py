@@ -72,11 +72,14 @@ class ChatbotService:
 
     def _create_mongo_client(self, uri: str) -> MongoClient:
         """
-        Build a TLS-enabled MongoDB client with explicit CA bundle configuration.
-
-        This avoids platform-specific certificate issues in containerized runtimes.
+        Build a TLS-enabled MongoDB client with explicit CA bundle and
+        relaxed OpenSSL security level for Atlas compatibility.
         """
         tls_ca_file = os.getenv("MONGO_TLS_CA_FILE", certifi.where())
+
+        # Ensure system-wide SSL picks up certifi CA bundle
+        os.environ.setdefault("SSL_CERT_FILE", tls_ca_file)
+
         return MongoClient(
             uri,
             tls=True,
