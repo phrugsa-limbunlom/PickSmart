@@ -139,6 +139,12 @@ PickSmart
 ## ⚙️ Configuration
 
 ### Environment Variables
+Create ```.env.local``` file under ```chatbot-app```  and add following host to connect to your local host
+
+```env
+VITE_BACKEND_URL=http://localhost:8000
+```
+
 Create ```.env``` file under ```chatbot-server``` folder and add API keys and MongoDB configuration as below:
 
 ```env
@@ -212,7 +218,7 @@ uvicorn main:app --reload
 ```
 5. Start frontend application:
 ```bash
-npm start
+npm run dev
 ```
 
 ## 💻 System Requirements
