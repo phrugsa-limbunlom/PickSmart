@@ -1,5 +1,5 @@
 # Use an official Node.js image
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Set working directory
 WORKDIR /app
@@ -16,7 +16,7 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-ENV NODE_OPTIONS=--openssl-legacy-provider
+ENV VITE_BACKEND_URL=http://localhost:8000
 
 # Start the application
 CMD ["npm", "start"]
