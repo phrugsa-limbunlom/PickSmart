@@ -15,7 +15,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-from service.VectorStoreService import VectorStoreService
+from service.vector_store import VectorStoreService
 from tavily import TavilyHybridClient, TavilyClient
 from constants.PromptMessage import PromptMessage
 from utils.file_utils import FileUtils

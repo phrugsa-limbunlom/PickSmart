@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from service.ChatbotService import ChatbotService
+from service.chatbot_service import ChatbotService
 from data.ChatMessage import ChatMessage
 
 # configure logging
@@ -56,7 +56,7 @@ app = FastAPI(lifespan=lifespan)
 # enable cors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://74.220.51.0/24"],
     allow_credentials=True,
     allow_methods=["POST", "OPTIONS"],
     allow_headers=["*"],
