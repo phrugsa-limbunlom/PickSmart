@@ -1,8 +1,23 @@
+"""
+Prompt message templates for the chatbot service.
+
+Contains system prompts, message templates, and instructions
+used during chat processing and agent execution.
+"""
+
+
 class PromptMessage:
+    """
+    Collection of prompt templates and messages for the chatbot.
+    
+    Contains system messages, user messages, and specialized prompts
+    for different stages of the product search and analysis pipeline.
+    """
+    
     System_Message = """
     You are an AI assistant specialized in helping users find the best products online.
     You use retrieval-augmented generation to provide accurate, up-to-date recommendations
-    based on the user’s preferences and constraints.
+    based on the user's preferences and constraints.
 
     Key responsibilities:
     - Clarify user needs and preferences (e.g., budget, features, use case).
@@ -12,27 +27,32 @@ class PromptMessage:
 
     Always provide responses that are helpful, polite, and tailored to the user's requirements.
     """
+    
     Human_Message = """
      {query}
     """
+    
     AI_Message = """ 
     Based on your request, I found the following products that best match your preferences:
 
     {context}
 
-    Let me know if you’d like more details about any of these options or need further assistance.
+    Let me know if you'd like more details about any of these options or need further assistance.
     """
+    
     Default_Message = """ 
     Hello! I'm an AI assistant specialized in helping users find the best products online. 
     I can assist you in finding the perfect product that fits your needs and preferences. 
     Please feel free to ask me about a specific product or category you're interested in, 
     and I'll do my best to provide you with accurate and up-to-date recommendations.
     """
+    
     ANALYZE_QUERY_PROMPT = """You are an AI assistant charged with revising user query that can \
     be used when searching online products. Generate a list of effective search queries for llm models \
     that will help to gather any relevant product information. \
     Only generate 3 queries max and send query in this format: query1|query2|query3.
     """
+    
     ANALYZE_RANK_PROMPT = """You are a product researcher specialized in analyzing and comparing product information \
     tailored for users' requirements. Analyze and rank products based on production information and users' requirements.\
     Give the product ranking result with this template in JSON format output. For example:
@@ -59,4 +79,5 @@ class PromptMessage:
     Uses the keys above for every answer.
     Do not include ```.
     """
+    
     ANALYZE_RANK_HUMAN_PROMPT = """This is list of product information:{products}. This is my requirement: {requirements}"""

@@ -1,5 +1,11 @@
+"""
+File utility functions for PickSmart application.
+
+Contains static methods for common file operations like loading configuration files.
+"""
 import yaml
 from typing import Any, Dict, List, Union
+
 
 class FileUtils:
     """

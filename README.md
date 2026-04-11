@@ -15,7 +15,7 @@ AI-powered shopping assistant platform for real-time product search with context
 ![PickSmart Demo](./assets/picksmart-demo.gif)
 
 
-PickSmart is an AI-powered product discovery platform that leverages the large language model and intelligent agents to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent (Hybrid RAG) for product discovery across multiple e-commerce marketplaces.
+PickSmart is an AI-powered product discovery platform that leverages large language models and intelligent agents to provide real-time product search, contextual question-answering, and personalized product recommendations. The system integrates a Retrieval-Augmented Generation (RAG) architecture with a search agent, also known as Hybrid RAG, for product discovery across multiple e-commerce marketplaces.
 
 
 ## 🚀 Features
@@ -45,7 +45,7 @@ PickSmart is an AI-powered product discovery platform that leverages the large l
 
 ## 📐System Architecture
 
-Coming Soon...
+PickSmart employs a modern distributed architecture that combines frontend and backend services through containerized deployment. The system is designed for scalability, maintainability, and real-time responsiveness.
 
 ### Frontend Layer
 - **Framework**: React.js with TypeScript
@@ -102,38 +102,63 @@ PickSmart
 ├── docker-compose.yaml             # Multi-service local deployment
 ├── LICENSE                         # Project license
 ├── README.md                       # Project documentation
+├── assets                          # Demo images and screenshots
 ├── chatbot-app                     # Frontend application (React + Vite)
-│   ├── .env                        # Frontend environment variables
 │   ├── Dockerfile                  # Frontend container definition
-│   ├── index.html                  # Vite HTML entry
+│   ├── index.html                  # Vite HTML entry point
 │   ├── package.json                # Frontend dependencies and scripts
-│   ├── package-lock.json           # Frontend dependency lockfile
-│   ├── vite.config.js              # Vite configuration
+│   ├── vite.config.js              # Vite runtime configuration
 │   ├── public                      # Public static assets
-│   ├── src                         # Frontend source code
-│   │   ├── App.css                 # Main UI styles
-│   │   ├── App.jsx                 # Main app component
-│   │   ├── App.test.js             # Frontend test file
-│   │   ├── index.css               # Global styles
-│   │   ├── main.jsx                # React entrypoint
-│   │   ├── reportWebVitals.js      # Performance metrics helper
-│   │   └── setupTests.js           # Test setup
-│   └── build                       # Static build output
+│   │   ├── index.html              # Root HTML template
+│   │   ├── manifest.json           # PWA manifest
+│   │   └── robots.txt              # SEO robots file
+│   └── src                         # Frontend source code
+│       ├── App.css                 # Main UI styles
+│       ├── App.jsx                 # Main app component
+│       ├── App.test.js             # Frontend test file
+│       ├── index.css               # Global styles
+│       ├── main.jsx                # React entry point
+│       ├── reportWebVitals.js      # Performance monitoring helper
+│       └── setupTests.js           # Jest test configuration
 └── chatbot-server                  # Backend application (FastAPI)
-	├── .env                        # Backend environment variables
-	├── Dockerfile                  # Backend container definition
-	├── model.yaml                  # LLM model config
-	├── requirements.txt            # Python dependencies
-	├── __init__.py
-	└── src                         # Backend source code
-		├── __init__.py
-		├── chatbot.py              # Core chatbot logic
-		├── main.py                 # FastAPI entrypoint
-		├── agent                   # Search agent workflow
-		├── constants               # Prompt and constants
-		├── data                    # Data models
-		├── service                 # Service layer
-		└── utils                   # Utility helpers
+    ├── Dockerfile                  # Backend container definition
+    ├── model.yaml                  # LLM model configuration
+    ├── requirements.txt            # Python dependencies
+    ├── __init__.py
+    └── src                         # Backend source code
+        ├── __init__.py
+        ├── config.py               # Application configuration
+        ├── main.py                 # FastAPI entry point
+        ├── adapters                # External service integrations
+        │   ├── model_provider.py   # LLM provider bridge
+        │   ├── llm/                # Language model adapters
+        │   │   └── groq_provider.py
+        │   ├── search/             # Search engine adapters
+        │   │   └── tavily_provider.py
+        │   └── vector/             # Vector database adapters
+        │       └── mongodb_provider.py
+        ├── api                     # REST API endpoints
+        │   ├── routes.py           # API route definitions
+        │   └── vector_search.py    # Vector search endpoints
+        ├── interfaces              # Abstract base classes
+        │   ├── base.py             # Common interface
+        │   ├── chat.py             # Chat interface
+        │   └── vector_store.py     # Vector store interface
+        ├── models                  # Data models and schemas
+        │   ├── agent_models.py     # Agent state models
+        │   ├── schemas.py          # Pydantic schemas
+        │   └── vector_db.py        # Vector DB models
+        ├── repositories            # Data access layer
+        │   ├── in_memory.py        # In-memory storage
+        │   └── vector_db_repository.py  # Database repository
+        ├── services                # Business logic
+        │   ├── chat.py             # Chat service
+        │   ├── embeddings.py       # Embedding service
+        │   ├── prompt_messages.py  # Prompt utilities
+        │   ├── search_agent.py     # Search agent logic
+        │   └── vector_store.py     # Vector store service
+        └── utils                   # Utility functions
+            └── file_utils.py       # File handling utilities
 ```
    
 ## ⚙️ Configuration
@@ -214,7 +239,7 @@ npm install
 ```
 4. Launch backend server:
 ```bash
-uvicorn main:app --reload
+uvicorn src.main:app --reload --env-file .env
 ```
 5. Start frontend application:
 ```bash
@@ -228,6 +253,110 @@ npm run dev
 - Docker Compose 2.0+
 - 8GB RAM minimum
 - 4 CPU cores recommended
+
+## � Getting Started
+
+### Quick Start with Docker
+
+The fastest way to get PickSmart running is with Docker Compose
+
+1. Clone the repository and navigate to the project
+   ```bash
+   git clone https://github.com/phrugsa-limbunlom/PickSmart.git
+   cd PickSmart
+   ```
+
+2. Set up your environment variables (see Configuration section)
+
+3. Start all services
+   ```bash
+   docker-compose up --build
+   ```
+
+4. Access the application
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Documentation: http://localhost:8000/docs
+
+## 📚 API Documentation
+
+The PickSmart backend provides comprehensive REST API documentation through Swagger UI. Once the backend is running, navigate to `http://localhost:8000/docs` to explore all available endpoints.
+
+Key API endpoints
+
+- `POST /api/chat` - Submit a product query and receive AI-powered responses
+- `GET /api/health` - Check backend service health
+- `POST /api/vector-search` - Perform direct vector similarity searches
+
+## 🔧 Development
+
+### Backend Development
+
+To develop the backend without Docker
+
+1. Install Python dependencies
+   ```bash
+   pip install -r chatbot-server/requirements.txt
+   ```
+
+2. Set up your `.env` file in the `chatbot-server` directory
+
+3. Run the FastAPI development server
+   ```bash
+   cd chatbot-server
+   uvicorn src.main:app --reload --env-file .env
+   ```
+
+The server will start with hot-reload enabled for development.
+
+### Frontend Development
+
+To develop the frontend with live reload
+
+1. Install Node dependencies
+   ```bash
+   cd chatbot-app
+   npm install
+   ```
+
+2. Set up your `.env.local` file with the backend URL
+
+3. Start the development server
+   ```bash
+   npm run dev
+   ```
+
+## 🐛 Troubleshooting
+
+### Docker Compose fails to start
+
+If you encounter exit code 1 when running Docker Compose
+
+- Verify all required environment variables are set in `.env` files
+- Ensure the MongoDB connection string is valid
+- Check that required API keys are active and have proper permissions
+- Run `docker-compose logs` to view detailed error messages
+
+### Backend cannot connect to MongoDB
+
+- Verify MongoDB credentials in the `.env` file
+- Ensure MongoDB Atlas network access includes your IP
+- Test the connection string independently
+- Check that the `MONGO_DATABASE` environment variable matches an existing database
+
+### Frontend cannot reach backend
+
+- Ensure `VITE_BACKEND_URL` in `.env.local` matches your backend URL
+- Verify the backend service is running and accessible
+- Check browser console for CORS errors
+- Confirm the backend is listening on the correct port
+
+### API Keys not working
+
+- Verify API keys are correctly copied without extra spaces
+- Check that API keys have the necessary permissions in their respective services
+- Ensure API keys are not expired or revoked
+- Confirm rate limits have not been exceeded
 
 ## 📜 License
 PickSmart is released under the MIT License. See the [LICENSE](https://github.com/phrugsa-limbunlom/PickSmart/blob/main/LICENSE) file for more details.

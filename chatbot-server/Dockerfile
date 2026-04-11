@@ -20,9 +20,9 @@ RUN /bin/bash -c "source $HOME/.cargo/env && pip install --no-cache-dir --timeou
 # Copy the entire project (including model.yaml)
 COPY . /chatbot-server
 
-# Set the working directory to /chatbot-server/src
-WORKDIR /chatbot-server/src
+# Set the working directory to the project root so src is on the module path
+WORKDIR /chatbot-server
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
