@@ -16,8 +16,10 @@ class FakeCollection:
 
     def create_search_index(self, model):
         self.created_model = model
-        self.search_indexes.append({"name": model.name, "queryable": True})
-        return model.name
+        # Use getattr to support both real and fake SearchIndexModel
+        name = getattr(model, 'name', None) or getattr(model, '_name', None) or (model['name'] if isinstance(model, dict) and 'name' in model else None)
+        self.search_indexes.append({"name": name, "queryable": True})
+        return name
 
 
 class FakeMongoDB:

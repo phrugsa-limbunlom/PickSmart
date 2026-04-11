@@ -14,6 +14,8 @@ class FakeChatService:
 
 class ErrorChatService:
     async def stream_chat(self, query: str):
+        if False:
+            yield ""
         raise RuntimeError("boom")
 
 
