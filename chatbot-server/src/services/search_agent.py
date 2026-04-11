@@ -1,13 +1,18 @@
+"""
+Search agent implementation using LangGraph state machine.
+
+Implements the multi-step product search and analysis pipeline.
+"""
 import json
 import logging
 from typing import Dict, List, Any, Optional
 
-import requests
-from data.SearchAgentState import SearchAgentState
+from src.interfaces import LLMClientInterface, HybridSearchInterface, ProductSourceSearchInterface
+from src.models import SearchAgentState
+from src.services.prompt_messages import PromptMessage
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph
-from constants.PromptMessage import PromptMessage
 import asyncio
 
 logging.basicConfig(
@@ -15,31 +20,48 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-
 logger = logging.getLogger(__name__)
+
 
 class SearchAgent:
     """
-    A search agent that processes queries and finds relevant product information.
-
-    This agent uses a state graph to analyze queries, search online shops,
-    analyze and rank results, and find product sources.
+    Product search agent using LangGraph state machine.
+    
+    This agent processes user queries through a multi-step pipeline:
+    1. Analyze query and break into multiple search queries
+    2. Search online shops and local database for products
+    3. Analyze and rank results based on user requirements
+    4. Find product sources and URLs
 
     Attributes:
         model: The language model identifier
-        tools: Dictionary of search tools
-        client: API client for LLM interactions
-        graph: Compiled state graph for processing
+        llm_client: LLM adapter for generating responses
+        hybrid_search: Adapter for product search
+        source_search: Adapter for finding product sources
+        graph: Compiled LangGraph state graph
     """
 
     def __init__(self,
                  llm_model: str,
-                 tools: Dict[str, Any],
-                 client: Any,
+                 llm_client: LLMClientInterface,
+                 hybrid_search: HybridSearchInterface,
+                 source_search: ProductSourceSearchInterface,
                  checkpointer: Optional[Any] = None) -> None:
+        """
+        Initialize the search agent.
+
+        Args:
+            llm_model: Language model identifier to use
+            llm_client: LLM adapter for inference
+            hybrid_search: Hybrid search adapter for products
+            source_search: Search adapter for product sources
+            checkpointer: Optional checkpoint saver for state persistence
+        """
         self.model = llm_model
-        self.tools = tools
-        self.client = client
+        self.llm_client = llm_client
+        self.hybrid_search = hybrid_search
+        self.source_search = source_search
+        
         graph = StateGraph(SearchAgentState)
         graph.add_node("analyze_query", self.analyze_query_node)
         graph.add_node("search_online_shop", self.search_online_node)
@@ -54,7 +76,7 @@ class SearchAgent:
 
     def call_client(self, prompt: str) -> str:
         """
-        Call the LLM client with a prompt and return the response.
+        Call the LLM client with a prompt.
 
         Args:
             prompt: The prompt text to send to the LLM
@@ -64,35 +86,27 @@ class SearchAgent:
 
         Raises:
             ValueError: If prompt is not a string
-            requests.exceptions.HTTPError: If API request fails
         """
         try:
             if not isinstance(prompt, str):
                 raise ValueError(f"Prompt must be a string, but got {type(prompt)}")
-
-            response = self.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model=self.model,
-                temperature=0.5,
-                max_tokens=1024,
-                stop=None,
-                stream=False,
-            )
-            return response.choices[0].message.content
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP Error occurred: {e.response.status_code} - {e.response.text}")
+            return self.llm_client.generate(prompt=prompt, model=self.model)
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}")
+            raise
 
     def analyze_query_node(self, state: SearchAgentState) -> Dict[str, List[str]]:
         """
-        Analyze the user query and break it down into specific search queries.
+        Analyze user query and generate multiple search queries.
+
+        Takes the user's input query and uses the LLM to break it down
+        into multiple effective search queries for product discovery.
 
         Args:
-            state: Current state containing the user query
+            state: Current agent state containing user query
 
         Returns:
-            Dictionary containing list of revised queries
+            Dictionary with revised_query field containing list of search queries
         """
         prompt = ChatPromptTemplate.from_messages(
             [
@@ -111,26 +125,29 @@ class SearchAgent:
 
     async def search_online_node(self, state: SearchAgentState) -> Dict[str, str]:
         """
-        Search for products using the revised queries.
+        Search for products using revised queries.
+
+        Executes hybrid search across local database and web for each
+        revised query, aggregating relevant product information.
 
         Args:
-            state: Current state containing revised queries
+            state: Current agent state containing revised queries
 
         Returns:
-            Dictionary containing concatenated product information
+            Dictionary with relevant_products field containing concatenated products
         """
         products = []
 
         for query in state['revised_query']:
 
             query = f"find the specific product title from this product requirement: {query}"
-
             response = await asyncio.to_thread(
-                lambda q=query: self.tools["hybrid_search"].search(query=q, max_local=3, max_foreign=2, save_foreign=True)
+                self.hybrid_search.search_products,
+                query,
+                3,
+                2,
             )
-
-            for r in response:
-                products.append(r['content'])
+            products.extend(response)
 
         products = " ".join([product for product in products])
 
@@ -138,13 +155,16 @@ class SearchAgent:
 
     def analyze_rank_node(self, state: SearchAgentState) -> Dict[str, str]:
         """
-        Analyze and rank the found products based on user requirements.
+        Analyze and rank products based on user requirements.
+
+        Uses the LLM to evaluate and rank found products according
+        to the original user requirements.
 
         Args:
-            state: Current state containing products and user query
+            state: Current agent state with products and user query
 
         Returns:
-            Dictionary containing analysis results
+            Dictionary with analyze_result field containing ranked products
         """
         prompt = ChatPromptTemplate.from_messages([
             PromptMessage.ANALYZE_RANK_PROMPT,
@@ -155,31 +175,25 @@ class SearchAgent:
 
     def search_source_node(self, state: SearchAgentState) -> Dict[str, Any]:
         """
-        Find product sources and additional information.
+        Find product sources, URLs, and images.
+
+        Resolves product metadata including purchase URLs and product images
+        from e-commerce websites for the top-ranked products.
 
         Args:
-            state: Current state containing analyzed products
+            state: Current agent state with analyzed products
 
         Returns:
-            Dictionary containing complete product information with URLs and images
+            Dictionary with result field containing complete product information
         """
         analyze_result = state["analyze_result"]
 
         analyze_result = json.loads(analyze_result)
 
-        product_tiles = [product["title"] for product in analyze_result["products"]]
-
-        query = "find the url source from e-commerce website for purchasing products only based on this product title {}"
-
-        search_result = list(
-            map(lambda title: self.tools["search"].search(query=query.format(title), max_results=1, include_images=True),
-                product_tiles))
-
-        product_images = [search["images"][0] or "" for search in search_result]
-
-        product_urls = [search["results"][0]["url"] or "" for search in search_result]
+        product_titles = [product["title"] for product in analyze_result["products"]]
+        product_sources = self.source_search.find_sources(product_titles)
 
         for idx, product in enumerate(analyze_result["products"]):
-            product["image"] = product_images[idx]
-            product["url"] = product_urls[idx]
+            product["image"] = product_sources[idx].get("image", "")
+            product["url"] = product_sources[idx].get("url", "")
         return {"result": analyze_result}
