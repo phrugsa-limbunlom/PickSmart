@@ -9,6 +9,7 @@ from typing import List, Dict, Optional
 from src.interfaces import IVectorStoreService
 from src.repositories.vector_db_repository import VectorDBRepository
 from src.services.embeddings import EmbeddingsService
+from bson import ObjectId
 
 logger = logging.getLogger(__name__)
 
@@ -108,18 +109,17 @@ class VectorStoreService(IVectorStoreService):
         result = collection.insert_one(vector_data)
         logger.info(f"Inserted vector document: {result.inserted_id}")
         return str(result.inserted_id)
-    
+
     def delete_document(self, doc_id: str) -> bool:
         """
         Delete document from vector store.
         
         Args:
             doc_id: Document identifier
-            
+        
         Returns:
             True if deleted, False if not found
         """
-        from bson import ObjectId
         collection = self.repo.get_collection()
         result = collection.delete_one({"_id": ObjectId(doc_id)})
         return result.deleted_count > 0
